@@ -16,6 +16,8 @@ jobs:
       - name: yarn
         run: yarn install
         working-directory: packages/backend
+      - run: yarn build
+        working-directory: packages/backend
       - name: Publish
         uses: cloudflare/wrangler-action@2.0.0
         with:
