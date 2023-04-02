@@ -20,4 +20,5 @@ jobs:
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          command: publish -j -c packages/backend/wrangler.json
+          command: publish -j -c wrangler.json
+          workingDirectory: packages/backend
