@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "compatibility_date": "2023-03-14",
+  "main": "worker.ts",
+  "define": {
+    "process.env.REMIX_DEV_SERVER_WS_PORT": "8002"
+  },
+  "site": {
+    "bucket": "./public"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "backend-db",
+      "database_id": "f80bfe9e-ec98-439b-9e08-bf36e0004eee"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "backend-bucket",
+      "preview_bucket_name": "BUCKET"
+    }
+  ]
+}
