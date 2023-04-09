@@ -6,6 +6,9 @@ This is a template for using Superflare + Remix.
 npm run dev
 ```
 
+```bash
+cp .dev.vars.example .dev.vars
+```
 
 ## migrate
 ```bash
