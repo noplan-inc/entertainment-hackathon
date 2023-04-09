@@ -44,9 +44,9 @@ describe("ZKWordle", function () {
 
       const size = wodles.length;
       const randao = await zkWordle.getRandao();
-      const answer = wodles[Math.floor(Math.random() * size)];
-      // questionをkeccak256でハッシュ化する
-      const hashedAnswer = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(answer));
+      const index = randao.mod(size);
+      const answer = wodles[index];
+      const hashedAnswer = ethers.utils.sha256(ethers.utils.toUtf8Bytes(answer));
 
       await expect(zkWordle.createQuestion(
         hashedAnswer
