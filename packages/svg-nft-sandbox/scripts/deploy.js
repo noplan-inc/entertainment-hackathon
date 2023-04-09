@@ -11,11 +11,15 @@
 
 
 async function main () {
-  const DynamicImageNFT = await ethers.getContractFactory("DynamicImageNFT");
-  const dynamicImageNFT = await DynamicImageNFT.deploy();
-  await dynamicImageNFT.deployed();
-  console.log("DynamicImageNFT deployed to:", dynamicImageNFT.address);
-  return dynamicImageNFT;
+  // const DynamicImageNFT = await ethers.getContractFactory("DynamicImageNFT");
+  // const dynamicImageNFT = await DynamicImageNFT.deploy();
+  // await dynamicImageNFT.deployed();
+  // console.log("DynamicImageNFT deployed to:", dynamicImageNFT.address);
+  const Nonce = await ethers.getContractFactory("Nonce");
+  console.log(await Nonce.interface.encodeDeploy([]));
+  nonce = await Nonce.deploy();
+  await nonce.deployed();
+  console.log("Nonce deployed to:", nonce.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

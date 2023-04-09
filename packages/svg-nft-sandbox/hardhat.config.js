@@ -15,10 +15,19 @@ module.exports = {
       //   apiKey: process.env.POLYGON_API_KEY,
       // },
     },
+    goerli: {
+      url: process.env.GOERLI_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      // etherscan: {
+      //   apiKey: process.env.POLYGON_API_KEY,
+      // },
+    },
   },
   etherscan: {
     apiKey: {
       polygonMumbai: process.env.POLYGON_API_KEY || "",
+      goerli: process.env.GOERLI_API_KEY || "",
     },
     url: process.env.POLYGON_MUMBAI_URL || "",
     // apiKey: process.env.POLYGON_API_KEY,
