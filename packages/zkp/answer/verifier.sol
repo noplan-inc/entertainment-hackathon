@@ -216,13 +216,13 @@ contract Verifier {
         return result;
     }
     function verifyTx(
-            Proof memory proof, uint[17] memory input
+            Proof memory proof, uint[8] memory expectedHash
         ) public view returns (bool r) {
         uint[] memory inputValues = new uint[](17);
         
         // 
         for(uint i = 0; i < 8; i++){
-            inputValues[i] = input[i];
+            inputValues[i] = expectedHash[i];
         }
 
         // フロントランニング対策
@@ -231,7 +231,8 @@ contract Verifier {
             inputValues[i + 8] = _addresses[i];
         }
 
-        inputValues[16] = input[16];
+        // outputがtrueになることを検証
+        inputValues[16] = 1;
 
         if (verify(inputValues, proof) == 0) {
             return true;
