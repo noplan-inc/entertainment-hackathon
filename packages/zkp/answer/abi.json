@@ -1,0 +1,43 @@
+{
+  "inputs": [
+    {
+      "name": "word",
+      "public": false,
+      "type": "array",
+      "components": {
+        "size": 5,
+        "type": "u8"
+      }
+    },
+    {
+      "name": "expectedHash",
+      "public": true,
+      "type": "array",
+      "components": {
+        "size": 8,
+        "type": "u32"
+      }
+    },
+    {
+      "name": "addressUint",
+      "public": false,
+      "type": "array",
+      "components": {
+        "size": 8,
+        "type": "u32"
+      }
+    },
+    {
+      "name": "pubAddressUint",
+      "public": true,
+      "type": "array",
+      "components": {
+        "size": 8,
+        "type": "u32"
+      }
+    }
+  ],
+  "output": {
+    "type": "bool"
+  }
+}
