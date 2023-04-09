@@ -26,37 +26,24 @@ library NFTDescriptor {
 
     struct ConstructTokenURIParams {
         uint256 tokenId;
-        address quoteTokenAddress;
-        address baseTokenAddress;
-        string quoteTokenSymbol;
-        string baseTokenSymbol;
-        uint8 quoteTokenDecimals;
-        uint8 baseTokenDecimals;
-        bool flipRatio;
-        int24 tickLower;
-        int24 tickUpper;
-        int24 tickCurrent;
-        int24 tickSpacing;
-        uint24 fee;
-        address poolAddress;
+        string word;
+        uint256 blockNum;
+        uint256 nonce;
     }
 
     function constructTokenURI(ConstructTokenURIParams memory params) public pure returns (string memory) {
-        string memory name = generateName(params, feeToPercentString(params.fee));
+        // string memory name = generateName(params, feeToPercentString(params.fee));
+        string memory name = generateName(params);
         string memory descriptionPartOne =
-            generateDescriptionPartOne(
-                escapeQuotes(params.quoteTokenSymbol),
-                escapeQuotes(params.baseTokenSymbol),
-                addressToString(params.poolAddress)
-            );
-        string memory descriptionPartTwo =
-            generateDescriptionPartTwo(
-                params.tokenId.toString(),
-                escapeQuotes(params.baseTokenSymbol),
-                addressToString(params.quoteTokenAddress),
-                addressToString(params.baseTokenAddress),
-                feeToPercentString(params.fee)
-            );
+            generateDescriptionPartOne(params.word);
+        // string memory descriptionPartTwo =
+        //     generateDescriptionPartTwo(
+        //         params.tokenId.toString(),
+        //         escapeQuotes(params.baseTokenSymbol),
+        //         addressToString(params.quoteTokenAddress),
+        //         addressToString(params.baseTokenAddress),
+        //         feeToPercentString(params.fee)
+        //     );
         string memory image = Base64.encode(bytes(generateSVGImage(params)));
 
         return
@@ -70,7 +57,7 @@ library NFTDescriptor {
                                 name,
                                 '", "description":"',
                                 descriptionPartOne,
-                                descriptionPartTwo,
+                                // descriptionPartTwo,
                                 '", "image": "',
                                 'data:image/svg+xml;base64,',
                                 image,
@@ -105,54 +92,46 @@ library NFTDescriptor {
     }
 
     function generateDescriptionPartOne(
-        string memory quoteTokenSymbol,
-        string memory baseTokenSymbol,
-        string memory poolAddress
+        string memory _word
     ) private pure returns (string memory) {
         return
             string(
                 abi.encodePacked(
-                    'This NFT represents a liquidity position in a Uniswap V3 ',
-                    quoteTokenSymbol,
-                    '-',
-                    baseTokenSymbol,
-                    ' pool. ',
-                    'The owner of this NFT can modify or redeem the position.\\n',
-                    '\\nPool Address: ',
-                    poolAddress,
-                    '\\n',
-                    quoteTokenSymbol
+                    'This NFT represents you clear the game and get the "',
+                    _word,
+                    '" in a ZKWordle'
                 )
             );
     }
 
-    function generateDescriptionPartTwo(
-        string memory tokenId,
-        string memory baseTokenSymbol,
-        string memory quoteTokenAddress,
-        string memory baseTokenAddress,
-        string memory feeTier
-    ) private pure returns (string memory) {
-        return
-            string(
-                abi.encodePacked(
-                    ' Address: ',
-                    quoteTokenAddress,
-                    '\\n',
-                    baseTokenSymbol,
-                    ' Address: ',
-                    baseTokenAddress,
-                    '\\nFee Tier: ',
-                    feeTier,
-                    '\\nToken ID: ',
-                    tokenId,
-                    '\\n\\n',
-                    unicode'⚠️ DISCLAIMER: Due diligence is imperative when assessing this NFT. Make sure token addresses match the expected tokens, as token symbols may be imitated.'
-                )
-            );
-    }
+    // function generateDescriptionPartTwo(
+    //     string memory tokenId,
+    //     string memory baseTokenSymbol,
+    //     string memory quoteTokenAddress,
+    //     string memory baseTokenAddress,
+    //     string memory feeTier
+    // ) private pure returns (string memory) {
+    //     return
+    //         string(
+    //             abi.encodePacked(
+    //                 ' Address: ',
+    //                 quoteTokenAddress,
+    //                 '\\n',
+    //                 baseTokenSymbol,
+    //                 ' Address: ',
+    //                 baseTokenAddress,
+    //                 '\\nFee Tier: ',
+    //                 feeTier,
+    //                 '\\nToken ID: ',
+    //                 tokenId,
+    //                 '\\n\\n',
+    //                 unicode'⚠️ DISCLAIMER: Due diligence is imperative when assessing this NFT. Make sure token addresses match the expected tokens, as token symbols may be imitated.'
+    //             )
+    //         );
+    // }
 
-    function generateName(ConstructTokenURIParams memory params, string memory feeTier)
+    // function generateName(ConstructTokenURIParams memory params, string memory feeTier)
+    function generateName(ConstructTokenURIParams memory params)
         private
         pure
         returns (string memory)
@@ -160,28 +139,27 @@ library NFTDescriptor {
         return
             string(
                 abi.encodePacked(
-                    'Uniswap - ',
-                    feeTier,
-                    ' - ',
-                    escapeQuotes(params.quoteTokenSymbol),
-                    '/',
-                    escapeQuotes(params.baseTokenSymbol),
-                    ' - ',
-                    tickToDecimalString(
-                        !params.flipRatio ? params.tickLower : params.tickUpper,
-                        params.tickSpacing,
-                        params.baseTokenDecimals,
-                        params.quoteTokenDecimals,
-                        params.flipRatio
-                    ),
-                    '<>',
-                    tickToDecimalString(
-                        !params.flipRatio ? params.tickUpper : params.tickLower,
-                        params.tickSpacing,
-                        params.baseTokenDecimals,
-                        params.quoteTokenDecimals,
-                        params.flipRatio
-                    )
+                    'ZKWordle - ',
+                    params.word,
+                    // escapeQuotes(params.quoteTokenSymbol),
+                    // '/',
+                    // escapeQuotes(params.baseTokenSymbol),
+                    // ' - ',
+                    // tickToDecimalString(
+                    //     !params.flipRatio ? params.tickLower : params.tickUpper,
+                    //     params.tickSpacing,
+                    //     params.baseTokenDecimals,
+                    //     params.quoteTokenDecimals,
+                    //     params.flipRatio
+                    // ),
+                    // '<>',
+                    // tickToDecimalString(
+                    //     !params.flipRatio ? params.tickUpper : params.tickLower,
+                    //     params.tickSpacing,
+                    //     params.baseTokenDecimals,
+                    //     params.quoteTokenDecimals,
+                    //     params.flipRatio
+                    // )
                 )
             );
     }
