@@ -61,6 +61,7 @@ html {
 body {
   height: 100%;
   color: #d7dadc;
+  background-color: black;
 }
 
 #root {
@@ -107,13 +108,15 @@ header {
 }
 
 .board {
-  margin-top: 100px;
+  margin: 30px auto 30px;
   padding: 0 90px;
+  width: 350px;
 }
 
 .letters-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 5px;
   margin-bottom: 5px;
 }
 
@@ -171,9 +174,9 @@ header {
 
 #keyboard {
   height: 200px;
-  position: fixed;
+  /* position: fixed; */
   bottom: 0;
-  margin: 0 8px;
+  margin: 0 auto;
   user-select: none;
   width: 484px;
 }
