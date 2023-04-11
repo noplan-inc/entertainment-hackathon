@@ -1,0 +1,11 @@
+from "./merkle_tree" import merkleRoot;
+import "hashes/sha256/sha256Padded";
+
+def main(private u8[5] word, u32[8] root, u32[14][8] path, bool[14] path_directions) -> bool {
+    u32[8] hashed = sha256Padded(word);
+    u32[8] calculated_root = merkleRoot(hashed, path, path_directions);
+
+    assert(root == calculated_root, "Invalid Merkle proof");
+    
+    return true;
+}
