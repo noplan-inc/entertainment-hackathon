@@ -16,6 +16,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 
     const formData = new URLSearchParams(await request.text());
     const word = formData.get("word");
+    const proof = formData.get("proof");
     // words tableに存在するか確認 ZKでやるとこ
     const words = await Word.where("text", word);
     if (!words.length){
