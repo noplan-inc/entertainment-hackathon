@@ -1,0 +1,232 @@
+@keyframes Shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes pop {
+  50% {
+    transform: scale(1.1, 1.1);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes Rotate {
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+}
+
+body {
+  height: 100%;
+  color: #d7dadc;
+  background-color: black;
+}
+
+#root {
+  height: 100%;
+  background-color: #121213;
+  width: 500px;
+  margin: auto;
+}
+
+header {
+  text-align: center;
+  font-weight: bold;
+  font-size: 2rem;
+  padding: 10px 0;
+  border-bottom: 1px solid #3a3a3c;
+}
+
+.message {
+  position: fixed;
+  text-align: center;
+  width: 500px;
+  top: 120px;
+}
+
+.message span {
+  opacity: 0;
+  font-size: 0.9rem;
+  background-color: #d7dadc;
+  border-radius: 5px;
+  color: #272729;
+  font-weight: bold;
+  padding: 20px 15px;
+  transition: 0.5s;
+}
+
+.message .result {
+  opacity: 1;
+}
+
+.message .show {
+  animation-name: fadeInOut;
+  animation-timing-function: cubic-bezier(0.1, 0.27, 0.23, 1);
+  animation-duration: 3s;
+}
+
+.board {
+  margin: 30px auto 30px;
+  padding: 0 90px;
+  width: 350px;
+}
+
+.letters-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 5px;
+  margin-bottom: 5px;
+}
+
+.letters-row.shake {
+  animation-name: Shake;
+  animation-timing-function: ease-in-out;
+  animation-duration: 0.5s;
+}
+
+.letter-tile {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #3a3a3c;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  line-height: 2rem;
+  font-weight: bold;
+  vertical-align: middle;
+  box-sizing: border-box;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.letter-tile.inputted {
+  border-color: #565758;
+  animation-name: pop;
+  animation-duration: 0.08s;
+}
+
+.letter-tile.correct {
+  border-color: #538d4e;
+  background-color: #538d4e;
+  animation-name: Rotate;
+  animation-timing-function: ease-in-out;
+  animation-duration: 0.5s;
+}
+
+.letter-tile.present {
+  border-color: #b59f3b;
+  background-color: #b59f3b;
+  animation-name: Rotate;
+  animation-timing-function: ease-in-out;
+  animation-duration: 0.5s;
+}
+
+.letter-tile.absent {
+  border-color: #3a3a3c;
+  background-color: #3a3a3c;
+  animation-name: Rotate;
+  animation-timing-function: ease-in-out;
+  animation-duration: 0.5s;
+}
+
+#keyboard {
+  height: 200px;
+  /* position: fixed; */
+  bottom: 0;
+  margin: 0 auto;
+  user-select: none;
+  width: 484px;
+}
+
+.row {
+  display: flex;
+  width: 100%;
+  margin: 0 auto 8px;
+  touch-action: manipulation;
+}
+
+.key {
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: bold;
+  border: 0;
+  padding: 0;
+  margin: 0 6px 0 0;
+  height: 58px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  background-color: #818384;
+  color: #d7dadc;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
+  transition: 0.2s;
+}
+
+.key.correct {
+  background-color: #538d4e;
+}
+
+.key.present {
+  background-color: #b59f3b;
+}
+
+.key.absent {
+  background-color: #3a3a3c;
+}
+
+.row .half {
+  flex: 0.5;
+}
+
+.row .one-and-a-half {
+  flex: 1.5;
+  font-size: 12px;
+}
