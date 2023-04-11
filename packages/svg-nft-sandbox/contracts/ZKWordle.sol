@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./AnswerVerifier.sol";
+import "hardhat/console.sol";
 
 
 contract ZKWordle is Ownable, AnswerVerifier {
@@ -39,16 +40,17 @@ contract ZKWordle is Ownable, AnswerVerifier {
     }
 
     function getAnswerHash() public view returns (bytes32) {
-        uint256 _round = round.current();
+        uint256 _round = round.current() - 1;
         return questions[_round];
     }
 
     function answer(Proof memory proof) public {
         bytes32 hash = getAnswerHash();
+
         // TOOD: すでに回答された問題は回答できない
-
         uint[8] memory _answer = bytes32ToUintArray(hash);
+        console.log("answer");
 
-        require(super.verifyAnswer(proof, _answer), "Answer is wrong");
+        require(super.verifyAnswer(proof, _answer, msg.sender), "Answer is wrong");
     }
 }

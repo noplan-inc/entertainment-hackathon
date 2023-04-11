@@ -76,11 +76,7 @@ describe("ZKWordle", function () {
     it("should success", async function() {
       let { initialize } = await import("zokrates-js");
 
-      const zokrates = (await initialize()).withOptions({
-        curve: "bn128",
-        scheme: "g16",
-        backend: "ark"
-      });
+      const zokrates = await initialize();
       const { zkWordle, otherAccount } = await loadFixture(deployFixture);
 
       const size = wodles.length;
@@ -105,14 +101,43 @@ describe("ZKWordle", function () {
 
       const {witness, output} = zokrates.computeWitness(artifacts, [answer, hashedAnswer, address, address]);
 
-      const key = fs.readFileSync('./test/proving.key');
 
-      const {proof}=  zokrates.generateProof(artifacts.program,witness, key);
-      console.log(`proof: ${proof}, type: ${typeof proof}, \n ${JSON.stringify(proof)}}`);
-      // console.log(JSON.stringify(keypair));
+      /* 
+      普段は出力しない(コントラクトをちょっといじってるので変わってしまうため)
+
+
+      // そらすえ神により、17ぐらいじゃねって言われて17で失敗したので、18にした
+      const srs = zokrates.universalSetup(18);
+
+      const key = zokrates.setupWithSrs(srs, artifacts.program);
+      const pk = key.pk;
+
+      // fs write
+      fs.writeFileSync('./test/proving222.key', pk);
+
+      const verifier = zokrates.exportSolidityVerifier(key.vk);
+      fs.writeFileSync('./test/verifier.sol', verifier);
+      */
+
+
+      // const key = zokrates.setup(artifacts.program);
+      // fs.writeFileSync('./test/proving.key', key.pk);
+      // const verifier = zokrates.exportSolidityVerifier(key.vk);
+      // fs.writeFileSync('./test/verifier.sol', verifier);
+      // console.log('key.vk: ', key.vk);
+      // fs.writeFileSync('./test/vk.json', JSON.stringify(key.vk));
+
+
+      const pk = fs.readFileSync('./test/proving.key');
+
+      // const key = fs.readFileSync('./test/proving.key');
+
+
+      const {proof}=  zokrates.generateProof(artifacts.program, witness, pk);
+
       const {a, b, c} = proof;
 
-      await expect(zkWordle.answer([a,b,c])).not.to.be.reverted;
+      await expect(zkWordle.connect(otherAccount).answer([a,b,c])).not.to.be.reverted;
     });
   });
 });
