@@ -4,8 +4,23 @@ require("@nomicfoundation/hardhat-chai-matchers")
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.18",
+  solidity: {
+    "compilers": [
+      {
+        "version": "0.8.18",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          }
+        }
+      }
+    ]
+  },
   defaultNetwork: "hardhat",
+  mocha: {
+    timeout: 100000000
+  },
   networks: {
     hardhat: {},
     mumbai: {

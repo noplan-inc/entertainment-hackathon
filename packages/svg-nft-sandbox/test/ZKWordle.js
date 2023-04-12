@@ -5,6 +5,21 @@ const {
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 const {wodles} = require("./wordleMaster");
+const {getWordDec, getWordHex, addressToUintArray} = require("./utils");
+const fs = require('fs');
+
+const zkSource = `
+import "hashes/sha256/sha256Padded";
+
+def main(private u8[5] word, u32[8] expectedHash,private  u32[8] addressUint, u32[8] pubAddressUint) -> bool {
+    u32[8] hash = sha256Padded(word);
+
+    assert(hash == expectedHash);
+    assert(addressUint == pubAddressUint);
+    return true;
+}
+`;
+
 
 describe("ZKWordle", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -54,6 +69,75 @@ describe("ZKWordle", function () {
 
       expect(await zkWordle.round()).to.equal(1);
       
+    });
+  });
+
+  describe("answer", function() {
+    it("should success", async function() {
+      let { initialize } = await import("zokrates-js");
+
+      const zokrates = await initialize();
+      const { zkWordle, otherAccount } = await loadFixture(deployFixture);
+
+      const size = wodles.length;
+      const randao = await zkWordle.getRandao();
+      const index = randao.mod(size);
+      const _answer = wodles[index];
+      const _hashedAnswer = ethers.utils.sha256(ethers.utils.toUtf8Bytes(_answer));
+
+      await expect(zkWordle.createQuestion(
+        _hashedAnswer
+      )).not.to.be.reverted;
+
+      const artifacts = zokrates.compile(zkSource);
+
+      const answer = getWordDec(_answer);
+      const hashedAnswer = getWordHex(_answer);
+      const address = addressToUintArray(otherAccount.address);
+
+      console.log(`word: ${answer}, type: ${typeof answer}`);
+      console.log(`expectedHash(dec chunked): ${hashedAnswer}, type: ${typeof hashedAnswer}`);
+      console.log(`address: ${address}, type: ${typeof address}`);
+
+      const {witness, output} = zokrates.computeWitness(artifacts, [answer, hashedAnswer, address, address]);
+
+
+      /* 
+      普段は出力しない(コントラクトをちょっといじってるので変わってしまうため)
+
+
+      // そらすえ神により、17ぐらいじゃねって言われて17で失敗したので、18にした
+      const srs = zokrates.universalSetup(18);
+
+      const key = zokrates.setupWithSrs(srs, artifacts.program);
+      const pk = key.pk;
+
+      // fs write
+      fs.writeFileSync('./test/proving222.key', pk);
+
+      const verifier = zokrates.exportSolidityVerifier(key.vk);
+      fs.writeFileSync('./test/verifier.sol', verifier);
+      */
+
+
+      // const key = zokrates.setup(artifacts.program);
+      // fs.writeFileSync('./test/proving.key', key.pk);
+      // const verifier = zokrates.exportSolidityVerifier(key.vk);
+      // fs.writeFileSync('./test/verifier.sol', verifier);
+      // console.log('key.vk: ', key.vk);
+      // fs.writeFileSync('./test/vk.json', JSON.stringify(key.vk));
+
+
+      const pk = fs.readFileSync('./test/proving.key');
+
+      // const key = fs.readFileSync('./test/proving.key');
+
+
+      const {proof}=  zokrates.generateProof(artifacts.program, witness, pk);
+
+      const {a, b, c} = proof;
+
+      await expect(zkWordle.connect(otherAccount).answer([a,b,c])).not.to.be.reverted;
     });
   });
 });
