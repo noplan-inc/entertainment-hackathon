@@ -1,0 +1,33 @@
+from "./merkle_tree" import merkleRoot;
+import "hashes/sha256/sha256Padded";
+import "hashes/mimc7/mimc7";
+import "utils/casts/u8_to_field";
+import "utils/casts/u32_to_field";
+
+def to_field_from_u8(u8[5] word) -> field {
+    field[5] mut field_elements = [0, 0, 0, 0, 0];
+     for u32 i in 0..5 {
+        field_elements[i] = u8_to_field(word[i]);
+     }
+
+    // フィールド要素を連結
+    field mut concatenated_elements = 0;
+    u32 base = 1000;  // 適切なベース値を選択してください
+    for u32 i in 0..5 {
+        concatenated_elements = concatenated_elements * u32_to_field(base) + field_elements[i];
+    }
+    return concatenated_elements;
+}
+
+def main(private u8[5] word, field root, field[14] path, bool[14] path_directions) -> bool {
+
+    // フィールド要素に変換
+    field field_word = to_field_from_u8(word);
+    field hashed = mimc7::<90>(field_word, 0);
+
+    field calculated_root = merkleRoot(hashed, path, path_directions);
+
+    assert(root == calculated_root, "Invalid Merkle proof");
+    
+    return true;
+}
