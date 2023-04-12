@@ -13,6 +13,8 @@ contract ZKWordle is Ownable, AnswerVerifier {
     Counters.Counter public round;
 
     mapping(uint256 => bytes32) public questions;
+    mapping (uint256 => uint256) public nonces;
+
     
     constructor() {}
 
@@ -37,6 +39,16 @@ contract ZKWordle is Ownable, AnswerVerifier {
         }
 
         return result;
+    }
+
+    function setNonce() public onlyOwner {
+        uint256 _round = round.current();
+        nonces[_round] = block.prevrandao;
+    }
+
+    function getLatestNonce() public view returns (uint256) {
+        uint256 _round = round.current();
+        return nonces[_round];
     }
 
     function getAnswerHash() public view returns (bytes32) {
