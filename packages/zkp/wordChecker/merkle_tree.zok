@@ -1,0 +1,19 @@
+import "hashes/mimc7/mimc7";
+
+def hash_pair(field a, field b) -> field {
+    return mimc7::<90>(a + b, 0);
+}
+
+def merkleRoot(field leaf, field[14] path, bool[14] path_directions) -> field{
+    field mut current = leaf;
+
+    for u32 i in 0..14 {
+        current = if path_directions[i] {
+            hash_pair(current, path[i])
+        } else {
+            hash_pair(path[i], current)
+        };
+    }
+
+    return current;
+}
