@@ -14,7 +14,7 @@ contract ZKWordle is Ownable, AnswerVerifier {
 
     DynamicImageNFT private _dynamicImageNFT;
 
-    event Answered(address indexed user, uint256 tokenId, bytes32 answerHash, uint256 timestamp);
+    event GetWordle(address indexed user, uint256 round);
 
     mapping(uint256 => bytes32) public questions;
     mapping(uint256 => uint256) public nonces;
@@ -95,6 +95,6 @@ contract ZKWordle is Ownable, AnswerVerifier {
             getLatestNonce()
         );
 
-        emit Answered(msg.sender, tokenId, hash, block.timestamp);
+        emit GetWordle(msg.sender, round.current());
     }
 }
