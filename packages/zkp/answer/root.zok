@@ -1,0 +1,10 @@
+import "hashes/sha256/sha256Padded";
+
+def main(private u8[5] word, u32[8] expectedHash,private  u32[8] addressUint, u32[8] pubAddressUint) -> bool {
+    u32[8] hash = sha256Padded(word);
+
+    assert(hash == expectedHash);
+    assert(addressUint == pubAddressUint);
+    return true;
+}
+ 
