@@ -24,6 +24,9 @@ module.exports = {
   },
   networks: {
     hardhat: {},
+    localhost: {
+      url: "http://127.0.0.1:8545", // ローカルのJSON-RPCエンドポイント
+    },
     mumbai: {
       url: process.env.POLYGON_MUMBAI_URL || "",
       accounts:
