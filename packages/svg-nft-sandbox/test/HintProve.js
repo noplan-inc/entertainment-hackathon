@@ -24,7 +24,12 @@ describe("HintProve", function () {
       }
 
       console.log('before computeWitness');
-      const {witness, output} = zokrates.computeWitness(artifacts, [[115, 104, 97, 107, 111].map(e => e.toString())]);
+      const word = 'shako';
+      // TextEncoderを使うと、文字列をUint8Arrayに変換できる
+      const encoded = new TextEncoder().encode(word);
+      const params = encoded.map(e => e.toString()).toString();
+      console.log(params);
+      const {witness, output} = zokrates.computeWitness(artifacts, [params.split(',')]);
       console.log('after computeWitness');
 
       let key = null;
