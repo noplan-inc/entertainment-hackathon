@@ -4,7 +4,7 @@ const {
 } = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
-const {wodles} = require("./wordleMaster");
+const { wodles } = require("./wordleMaster");
 
 describe("ZKWordle", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -46,14 +46,13 @@ describe("ZKWordle", function () {
       const randao = await zkWordle.getRandao();
       const index = randao.mod(size);
       const answer = wodles[index];
-      const hashedAnswer = ethers.utils.sha256(ethers.utils.toUtf8Bytes(answer));
+      const hashedAnswer = ethers.utils.sha256(
+        ethers.utils.toUtf8Bytes(answer)
+      );
 
-      await expect(zkWordle.createQuestion(
-        hashedAnswer
-      )).not.to.be.reverted;
+      await expect(zkWordle.createQuestion(hashedAnswer)).not.to.be.reverted;
 
       expect(await zkWordle.round()).to.equal(1);
-      
     });
   });
 });
