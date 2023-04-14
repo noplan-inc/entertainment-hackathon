@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
@@ -20,6 +24,10 @@
     "hardhat": "^2.13.0",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.0",
-    "typechain": "^8.1.0"
+    "typechain": "^8.1.0",
+    "zokrates-js": "^1.1.6"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
   }
 }

@@ -9,14 +9,14 @@ import { Form } from "@remix-run/react";
 import { Word } from "~/models/Word";
 import { ActionArgs } from "@remix-run/cloudflare";
 import { providers, Contract, BigNumber } from "ethers";
-import nonceAbi from "../../abi/nonce.json";
+import zkWordleAbi from "../../abi/zkWordle.json";
 import { wodles } from "../../../svg-nft-sandbox/test/wordleMaster";
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
 
 export async function action({ request, context: { auth } }: ActionArgs) {
-  // DBにデータを入れる => 直接wodlesを用いる。
+  // TODO: wordleMasterから直接読み込む
 
   const formData = new URLSearchParams(await request.text());
   const word = formData.get("word");
@@ -27,21 +27,21 @@ export async function action({ request, context: { auth } }: ActionArgs) {
     throw Error("word does not exist!!!!");
   }
 
-  let rpcUrl = "https://rpc.ankr.com/eth_goerli";
+  const rpcUrl = "https://rpc.ankr.com/eth_goerli";
   // superflareでは、fetch POSTするとき現状referrerを設定しないとエラーになる
-  let provider = new providers.JsonRpcProvider({
+  const provider = new providers.JsonRpcProvider({
     url: rpcUrl,
     fetchOptions: {
       referrer: rpcUrl,
     },
   });
   // contractからnonceを取得
-  let nonceContract = new Contract(
-    "0x0F3cCCF9F963D75B9281F665c914B0C13319Aeb1",
-    nonceAbi,
+  const zkWordle = new Contract(
+    "0x7F8aE4020E3991E7e9b535527D2d5BA5D29a593B",
+    zkWordleAbi,
     provider
   );
-  let nonce = await nonceContract.getNonce(1);
+  const nonce = await zkWordle.getLatestNonce();
   // console.log("nonce")
   // console.log(nonce.toString())
 
