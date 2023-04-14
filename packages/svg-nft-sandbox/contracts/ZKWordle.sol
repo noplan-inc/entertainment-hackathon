@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./AnswerVerifier.sol";
-import "./DynamicImageNFT.sol";
+import "./ZKWordleNFT.sol";
 import "hardhat/console.sol";
 
 contract ZKWordle is Ownable, AnswerVerifier {
@@ -12,15 +12,15 @@ contract ZKWordle is Ownable, AnswerVerifier {
 
     Counters.Counter public round;
 
-    DynamicImageNFT private _dynamicImageNFT;
+    ZKWordleNFT private zkWordleNFT;
 
     event GetWordle(address indexed user, uint256 round);
 
     mapping(uint256 => bytes32) public questions;
     mapping(uint256 => uint256) public nonces;
 
-    constructor(address dynamicImageNFTAddress) {
-        _dynamicImageNFT = DynamicImageNFT(dynamicImageNFTAddress);
+    constructor(address zkWordleNFTAddress) {
+        zkWordleNFT = ZKWordleNFT(zkWordleNFTAddress);
     }
 
     function createQuestion(bytes32 _answerHash) public onlyOwner {
@@ -65,13 +65,8 @@ contract ZKWordle is Ownable, AnswerVerifier {
 
     function answer(
         Proof memory proof,
-        uint256 tokenId,
-        uint256 width,
-        uint256 height,
-        string memory backgroundColor,
-        string memory text,
-        string memory textColor,
-        uint256 fontSize
+        string memory word,
+        uint256[30] memory colors
     ) public {
         bytes32 hash = getAnswerHash();
 
@@ -84,15 +79,12 @@ contract ZKWordle is Ownable, AnswerVerifier {
             "Answer is wrong"
         );
 
-        _dynamicImageNFT.mint(
-            tokenId,
-            width,
-            height,
-            backgroundColor,
-            text,
-            textColor,
-            fontSize,
-            getLatestNonce()
+        zkWordleNFT.mint(
+            msg.sender,
+            round.current(),
+            word,
+            getLatestNonce(),
+            colors
         );
 
         emit GetWordle(msg.sender, round.current());
