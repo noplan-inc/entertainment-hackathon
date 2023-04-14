@@ -17,45 +17,34 @@ contract ZKWordleNFT is ERC721 {
 
     }
 
-    function tokenURI(uint256 _tokenId, string memory _word, uint256 _nonce, string[30] memory _colors)
+    // ERC721のtokenURIと被るとethers.jsがバグって呼び出せなくなるるので一旦別名で定義
+    function tokenURI2(uint256 _tokenId, string memory _word, uint256 _nonce, uint256[30] memory _colors)
     // function tokenURI()
-        external
+        public
         view
         returns (string memory)
     {
-        // uint256 tokenId = 1;
-        // string memory word = "HELLO";
-        // uint256 blockNum = block.number;
-        // uint256 nonce = 45454545;
-        // string memory black = "#000";
-        // string memory yellow = "#ffcc00";
-        // string memory green = "#00cc00";
-        // address tokenAddress = address(this); 
-        // string[5][6] memory colors = [
-        //     [black, yellow, black, black, yellow],
-        //     [black, yellow, black, black, black],
-        //     [black, black, green, black, yellow],
-        //     [black, black, green, black, yellow],
-        //     [green, black, black, green, black],
-        //     [green, green, green, green, green]
-        // ];
+        string memory black = "#000";
+        string memory yellow = "#ffcc00";
+        string memory green = "#00cc00";
         string[5][6] memory colors;
         uint256 k = 0;
-        for (uint256 i = 0; i < 5; i++) {
-            for (uint256 j = 0; j < 6; j++) {
-                colors[i][j] = _colors[k];
+        for (uint256 i = 0; i < 6; i++) {
+            for (uint256 j = 0; j < 5; j++) {
+                if (_colors[k] == 1) {
+                    colors[i][j] = black;
+                } else if (_colors[k] == 2) {
+                    colors[i][j] = yellow;
+                } else if (_colors[k] == 3) {
+                    colors[i][j] = green;
+                }
                 k++;
             }
         }
+
         return
             NFTDescriptor.constructTokenURI(
                 NFTDescriptor.ConstructTokenURIParams({
-                    // tokenId: tokenId,
-                    // word: word,
-                    // blockNum: blockNum,
-                    // nonce: nonce,
-                    // colors: colors,
-                    // tokenAddress: tokenAddress
                     tokenId: _tokenId,
                     word: _word,
                     blockNum: block.number,
