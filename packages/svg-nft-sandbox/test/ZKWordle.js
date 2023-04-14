@@ -10,10 +10,8 @@ const fs = require('fs');
 
 const zkSource = `
 import "hashes/sha256/sha256Padded";
-
 def main(private u8[5] word, u32[8] expectedHash,private  u32[8] addressUint, u32[8] pubAddressUint) -> bool {
     u32[8] hash = sha256Padded(word);
-
     assert(hash == expectedHash);
     assert(addressUint == pubAddressUint);
     return true;
@@ -104,17 +102,12 @@ describe("ZKWordle", function () {
 
       /* 
       普段は出力しない(コントラクトをちょっといじってるので変わってしまうため)
-
-
       // そらすえ神により、17ぐらいじゃねって言われて17で失敗したので、18にした
       const srs = zokrates.universalSetup(18);
-
       const key = zokrates.setupWithSrs(srs, artifacts.program);
       const pk = key.pk;
-
       // fs write
       fs.writeFileSync('./test/proving222.key', pk);
-
       const verifier = zokrates.exportSolidityVerifier(key.vk);
       fs.writeFileSync('./test/verifier.sol', verifier);
       */
