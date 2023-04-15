@@ -51,7 +51,7 @@ library NFTSVG {
         svg = string(
             abi.encodePacked(
                 '<svg width="290" height="500" viewBox="0 0 290 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs>',
-                '<filter id="f1"><feImage result="p0" xlink:href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjkwJyBoZWlnaHQ9JzUwMCcgdmlld0JveD0nMCAwIDI5MCA1MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHJlY3Qgd2lkdGg9JzI5MHB4JyBoZWlnaHQ9JzUwMHB4JyBmaWxsPScjODM4NDNmJy8+PC9zdmc+"/><feImage result="p1" xlink:href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjkwJyBoZWlnaHQ9JzUwMCcgdmlld0JveD0nMCAwIDI5MCA1MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGNpcmNsZSBjeD0nMTknIGN5PScyNzEnIHI9JzEyMHB4JyBmaWxsPScjYzAyYWFhJy8+PC9zdmc+"/><feImage result="p2" xlink:href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjkwJyBoZWlnaHQ9JzUwMCcgdmlld0JveD0nMCAwIDI5MCA1MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGNpcmNsZSBjeD0nMTA0JyBjeT0nNDYyJyByPScxMjBweCcgZmlsbD0nIzkwMjJkOScvPjwvc3ZnPg==" /><feImage result="p3" xlink:href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjkwJyBoZWlnaHQ9JzUwMCcgdmlld0JveD0nMCAwIDI5MCA1MDAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PGNpcmNsZSBjeD0nMjU4JyBjeT0nNDQzJyByPScxMDBweCcgZmlsbD0nIzc1NmNjMicvPjwvc3ZnPg==" />',
+                '<filter id="f1"><feImage result="p0" xlink:href=""/><feImage result="p1" xlink:href=""/><feImage result="p2" xlink:href="" /><feImage result="p3" xlink:href="" />',
                 '<feBlend mode="overlay" in="p0" in2="p1" /><feBlend mode="exclusion" in2="p2" /><feBlend mode="overlay" in2="p3" result="blendOut" /><feGaussianBlur ',
                 'in="blendOut" stdDeviation="42" /></filter> <clipPath id="corners"><rect width="290" height="500" rx="42" ry="42" /></clipPath>',
                 '<path id="text-path-a" d="M40 12 H250 A28 28 0 0 1 278 40 V460 A28 28 0 0 1 250 488 H40 A28 28 0 0 1 12 460 V40 A28 28 0 0 1 40 12 z" />',
@@ -126,8 +126,8 @@ library NFTSVG {
     function generageSvgCurve(
         string[5][6] memory colors
     ) private pure returns (string memory svg) {
-        uint256 x = 0; 
-        uint256 y = 0;
+        uint256 x = 70; 
+        uint256 y = 160;
         svg = "";
         for (uint256 i = 0; i < colors.length; i++) {
             for (uint256 j = 0; j < colors[i].length; j++) {
@@ -138,15 +138,15 @@ library NFTSVG {
                         x.toString(),
                         '" y="',
                         y.toString(),
-                        '" width="10" height="10" fill="',
+                        '" width="25" height="25" fill="',
                         colors[i][j],
                         '"/>'
                     )
                 );
-                x += 10;
+                x += 30;
             }
-            x = 0;
-            y += 10;
+            x = 70;
+            y += 30;
         }
 
     }
@@ -173,7 +173,7 @@ library NFTSVG {
                 '<rect width="',
                 uint256(7 * (str2length + 4)).toString(),
                 'px" height="26px" rx="8px" ry="8px" fill="rgba(0,0,0,0.6)" />',
-                '<text x="12px" y="17px" font-family="\'Courier New\', monospace" font-size="12px" fill="white"><tspan fill="rgba(255,255,255,0.6)">Min Tick: </tspan>',
+                '<text x="12px" y="17px" font-family="\'Courier New\', monospace" font-size="12px" fill="white"><tspan fill="rgba(255,255,255,0.6)">Block Number: </tspan>',
                 blockNum.toString(),
                 '</text></g>',
                 ' <g style="transform:translate(29px, 444px)">',
