@@ -4,7 +4,7 @@ const {
 } = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
-const {wodles} = require("./wordleMaster");
+const {wordles} = require("./wordleMaster");
 const {getWordDec, getWordHex, addressToUintArray} = require("./utils");
 const fs = require('fs');
 const v8 = require('v8');
@@ -37,8 +37,12 @@ describe("ZKWordle", function () {
     });
     const nft = await NFT.deploy();
 
+
     const ZKWordle = await ethers.getContractFactory("ZKWordle");
     const zkWordle = await ZKWordle.deploy(nft.address);
+
+    await nft.setMinter(zkWordle.address);
+
 
     return { zkWordle, owner, otherAccount };
   }
@@ -65,10 +69,10 @@ describe("ZKWordle", function () {
     it("Should success", async function () {
       const { zkWordle } = await loadFixture(deployFixture);
 
-      const size = wodles.length;
+      const size = wordles.length;
       const randao = await zkWordle.getRandao();
       const index = randao.mod(size);
-      const answer = wodles[index];
+      const answer = wordles[index];
       const hashedAnswer = ethers.utils.sha256(ethers.utils.toUtf8Bytes(answer));
 
       await expect(zkWordle.createQuestion(
@@ -87,10 +91,12 @@ describe("ZKWordle", function () {
       const zokrates = await initialize();
       const { zkWordle, otherAccount } = await loadFixture(deployFixture);
 
-      const size = wodles.length;
+      const size = wordles.length;
       const randao = await zkWordle.getRandao();
       const index = randao.mod(size);
-      const _answer = wodles[index];
+      const _answer = 'shoos'
+
+      // const _answer = wordles[index];
       const _hashedAnswer = ethers.utils.sha256(ethers.utils.toUtf8Bytes(_answer));
 
       await expect(zkWordle.createQuestion(
@@ -116,6 +122,11 @@ describe("ZKWordle", function () {
       console.log(`expectedHash(dec chunked): ${hashedAnswer}, type: ${typeof hashedAnswer}`);
       console.log(`address: ${address}, type: ${typeof address}`);
 
+      console.log(answer);
+      console.log(hashedAnswer);
+      console.log(address);
+
+
       const {witness, output} = zokrates.computeWitness(artifacts, [answer, hashedAnswer, address, address]);
 
 
@@ -133,26 +144,46 @@ describe("ZKWordle", function () {
 
 
       let key = null;
-      if (!fs.existsSync('./test/answer/proving.key') || !fs.existsSync('./test/answer/verifying.key')) {
+      if (!fs.existsSync('./test/answer/proving_raw.key') || !fs.existsSync('./test/answer/verifying.key')) {
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
         key = zokrates.setup(artifacts.program);
-        fs.writeFileSync('./test/answer/proving.key', v8.serialize(key.pk));
+        fs.writeFileSync('./test/answer/proving_raw.key', key.pk);
         // vkを保存しておく
-        fs.writeFileSync('./test/answer/verifying.key', v8.serialize(key.vk));
+        fs.writeFileSync('./test/answer/verifying.key', JSON.stringify(key.vk));
 
         const verifier = zokrates.exportSolidityVerifier(key.vk);
         fs.writeFileSync('./test/answer/verifier.sol', verifier);
       } else {
-        const pk = v8.deserialize(fs.readFileSync('./test/answer/proving.key'));
-        const vk = v8.deserialize(fs.readFileSync('./test/answer/verifying.key'));
+        const pk = fs.readFileSync('./test/answer/proving_raw.key');
+        const vk = JSON.parse(fs.readFileSync('./test/answer/verifying.key'));
         key = {pk, vk};
       }
 
+      // console.log(new Uint8Array(vkey));
+      // console.log(v8.deserialize(vkey));
+
+      // throw Error('aa');
+
+      // console.log(new Uint8Array(pkey))
       const result = zokrates.generateProof(artifacts.program, witness, key.pk);
       expect(zokrates.verify(key.vk, result)).to.be.true;
 
       const {a, b, c} = result.proof;
 
-      // await expect(zkWordle.connect(otherAccount).answer([a,b,c])).not.to.be.reverted;
+      // colorsという30個の1が入ってる配列を作る
+      const colors = Array(30).fill(1);
+
+      await expect(zkWordle.connect(otherAccount).answer([a,b,c], _answer, colors)).not.to.be.reverted;
     });
   });
 });
