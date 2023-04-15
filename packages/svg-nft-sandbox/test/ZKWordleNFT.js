@@ -35,7 +35,7 @@ describe("ZKWordleNFT", function () {
 
   describe("tokenURI", function () {
     it("Should success", async function () {
-      const { nft } = await loadFixture(deployFixture);
+      const { nft, owner } = await loadFixture(deployFixture);
 
       const tokenId = BigNumber.from(1);
       const black = BigNumber.from(1);
@@ -54,7 +54,8 @@ describe("ZKWordleNFT", function () {
       ];
       // colorsをフラット化
       const colorsFlat = colors.flat();
-      const tokenURI = await nft.tokenURI2(tokenId, word, nonce, colorsFlat);
+      await nft.mint(owner.address, tokenId, word, nonce, colorsFlat);
+      const tokenURI = await nft.tokenURI(tokenId);
       console.log(tokenURI);
     });
   });
