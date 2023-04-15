@@ -14,6 +14,7 @@ contract ZKWordleNFT is ERC721, AccessControl {
 
     constructor()ERC721("ZKWordleNFT", "ZKW") {
         _setupRole(MINTER_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     mapping(uint256 => NFTDescriptor.ConstructTokenURIParams) public tokenURIParams;
