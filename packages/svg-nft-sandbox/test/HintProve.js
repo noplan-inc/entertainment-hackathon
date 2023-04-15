@@ -14,12 +14,12 @@ describe("HintProve", function () {
 
 
       let artifacts = null;
-      if (!fs.existsSync('./test/wordChecker-artifacts')) {
+      if (!fs.existsSync('./test/hint/wordChecker-artifacts')) {
         artifacts = zokrates.compile(zkSource);
         const serializedArtifacts = v8.serialize(artifacts);
-        fs.writeFileSync('./test/wordChecker-artifacts', serializedArtifacts);
+        fs.writeFileSync('./test/hint/wordChecker-artifacts', serializedArtifacts);
       } else {
-        const rawArtifacts = fs.readFileSync('./test/wordChecker-artifacts');
+        const rawArtifacts = fs.readFileSync('./test/hint/wordChecker-artifacts');
         artifacts = v8.deserialize(rawArtifacts);
       }
 
@@ -33,14 +33,14 @@ describe("HintProve", function () {
       console.log('after computeWitness');
 
       let key = null;
-      if (!fs.existsSync('./test/proving.key') || !fs.existsSync('./test/verifying.key')) {
+      if (!fs.existsSync('./test/hint/proving.key') || !fs.existsSync('./test/hint/verifying.key')) {
         key = zokrates.setup(artifacts.program);
-        fs.writeFileSync('./test/proving.key', v8.serialize(key.pk));
+        fs.writeFileSync('./test/hint/proving.key', v8.serialize(key.pk));
         // vkを保存しておく
-        fs.writeFileSync('./test/verifying.key', v8.serialize(key.vk));
+        fs.writeFileSync('./test/hint/verifying.key', v8.serialize(key.vk));
       } else {
-        const pk = v8.deserialize(fs.readFileSync('./test/proving.key'));
-        const vk = v8.deserialize(fs.readFileSync('./test/verifying.key'));
+        const pk = v8.deserialize(fs.readFileSync('./test/hint/proving.key'));
+        const vk = v8.deserialize(fs.readFileSync('./test/hint/verifying.key'));
         key = {pk, vk};
       }
       console.log('generateProof');

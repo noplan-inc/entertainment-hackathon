@@ -11,15 +11,18 @@
 
 
 async function main () {
-  const ZKWordle = await ethers.getContractFactory("ZKWordle");
-  const nft = "0x2e06a2744210716725BFAEf0EaBa6cdCCE02639c";
-  const zkWordle = await ZKWordle.deploy(nft);
-  await zkWordle.deployed();
+  const LIB = await ethers.getContractFactory("NFTDescriptor");
+  const lib = await LIB.deploy();
+  await lib.deployed()
+  console.log(`lib deployed to: ${lib.address}`);
 
-  const nonceTx = await zkWordle.setNonce();
-  await nonceTx.wait();
-
-  console.log("zkWordle deployed to:", zkWordle.address);
+  const NFT = await ethers.getContractFactory("ZKWordleNFT", {
+    libraries: {
+      NFTDescriptor: lib.address,
+    },
+  });
+  const nft = await NFT.deploy();
+  console.log("zkWordleNFT deployed to:", nft.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

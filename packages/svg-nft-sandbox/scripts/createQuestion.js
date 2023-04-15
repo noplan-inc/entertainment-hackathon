@@ -7,19 +7,32 @@
 // const hre = require("hardhat");
 // const { ethers } = require("hardhat");
 
+const { BigNumber, utils } = require('ethers');
+const master  = require('../test/wordleMaster');
 
 
 
 async function main () {
   const ZKWordle = await ethers.getContractFactory("ZKWordle");
-  const nft = "0x2e06a2744210716725BFAEf0EaBa6cdCCE02639c";
-  const zkWordle = await ZKWordle.deploy(nft);
-  await zkWordle.deployed();
+  const address = "0xD29752eB55DEF82d116D128E62c01E50a8F76cA2";
+  const zkWordle = await ZKWordle.attach(address);
+  const nonce = await zkWordle.getLatestNonce();
+  console.log(nonce);
 
-  const nonceTx = await zkWordle.setNonce();
-  await nonceTx.wait();
+  console.log(master);
+  const {wordles} = master;
+  const size = wordles.length;
+  const index = nonce.mod(size);
+  console.log(index);
+  const answer = wordles[index];
+  console.log(answer);
 
-  console.log("zkWordle deployed to:", zkWordle.address);
+  // const hash = utils.sha256(utils.toUtf8Bytes(answer));
+
+  // console.log(hash);
+
+  // const questionTx = await zkWordle.createQuestion(hash);
+  // await questionTx.wait();
 }
 
 // We recommend this pattern to be able to use async/await everywhere
