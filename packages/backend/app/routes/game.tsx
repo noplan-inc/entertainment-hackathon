@@ -314,27 +314,13 @@ export default function Game() {
         const uintAddress = addressToUintArray(address);
 
         // 引数全部をconsole.log
-        console.log(answerDec);
-        console.log(hashedAnswer);
-        console.log(uintAddress);
-        console.log(uintAddress);
-
-        console.log(`address: ${address}}`);
-
-
         const {witness} = zokrates.computeWitness(artifacts, [answerDec, hashedAnswer, uintAddress, uintAddress]);
 
-
-        // // /zkp/answer/proving.keyをfetchする
         const pk = await fetchProvingKey();
-        console.log(pk);
-
 
         const {proof} =  zokrates.generateProof(artifacts.program, witness, pk);
         // @ts-ignore
         const {a, b, c} = proof;
-
-        // const verifyied = zokrates.verify() 
 
         // TODO colors
         await writeAnswer([a,b,c], answerRaw);
