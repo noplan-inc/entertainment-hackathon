@@ -13,17 +13,9 @@ contract ZKWordleNFT is ERC721 {
     constructor()ERC721("ZKWordleNFT", "ZKW") {
     }
 
-    function mint() public {
+    mapping(uint256 => NFTDescriptor.ConstructTokenURIParams) public tokenURIParams;
 
-    }
-
-    // ERC721のtokenURIと被るとethers.jsがバグって呼び出せなくなるるので一旦別名で定義
-    function tokenURI2(uint256 _tokenId, string memory _word, uint256 _nonce, uint256[30] memory _colors)
-    // function tokenURI()
-        public
-        view
-        returns (string memory)
-    {
+    function mint(address userAddress, uint256 _tokenId, string memory _word, uint256 _nonce, uint256[30] memory _colors) public {
         string memory black = "#000";
         string memory yellow = "#ffcc00";
         string memory green = "#00cc00";
@@ -42,16 +34,27 @@ contract ZKWordleNFT is ERC721 {
             }
         }
 
-        return
-            NFTDescriptor.constructTokenURI(
-                NFTDescriptor.ConstructTokenURIParams({
-                    tokenId: _tokenId,
-                    word: _word,
-                    blockNum: block.number,
-                    nonce: _nonce,
-                    colors: colors,
-                    tokenAddress: address(this)
-                })
-            );
+        tokenURIParams[_tokenId] = NFTDescriptor.ConstructTokenURIParams({
+            tokenId: _tokenId,
+            word: _word,
+            blockNum: block.number,
+            nonce: _nonce,
+            colors: colors,
+            tokenAddress: address(this)
+        });
+
+        _safeMint(userAddress, _tokenId);
+    }
+
+    // ERC721のtokenURIと被るとethers.jsがバグって呼び出せなくなるるので一旦別名で定義
+    function tokenURI2(uint256 _tokenId)
+    // function tokenURI()
+        public
+        view
+        returns (string memory)
+    {
+        NFTDescriptor.ConstructTokenURIParams memory constructTokenURIParams = tokenURIParams[_tokenId];
+
+        return NFTDescriptor.constructTokenURI(constructTokenURIParams);
     }
 }
