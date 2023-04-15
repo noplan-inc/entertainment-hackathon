@@ -1,5 +1,12 @@
+import { ConnectWallet } from "./ConnectWallet";
+
 const Header = () => {
-  return <header>Blockchain Wordle</header>;
+  return <header className="flex">
+    Blockchain Wordle
+    <div>
+      <ConnectWallet/>
+    </div>
+  </header>;
 };
 
 export default Header;
