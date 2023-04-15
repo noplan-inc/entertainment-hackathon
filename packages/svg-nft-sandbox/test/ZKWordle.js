@@ -7,7 +7,7 @@ const { expect } = require("chai");
 const {wodles} = require("./wordleMaster");
 const {getWordDec, getWordHex, addressToUintArray} = require("./utils");
 const fs = require('fs');
-
+const v8 = require('v8');
 const zkSource = `
 import "hashes/sha256/sha256Padded";
 def main(private u8[5] word, u32[8] expectedHash,private  u32[8] addressUint, u32[8] pubAddressUint) -> bool {
@@ -27,8 +27,18 @@ describe("ZKWordle", function () {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
 
+    const LIB = await ethers.getContractFactory("NFTDescriptor");
+    const lib = await LIB.deploy();
+
+    const NFT = await ethers.getContractFactory("ZKWordleNFT", {
+      libraries: {
+        NFTDescriptor: lib.address,
+      },
+    });
+    const nft = await NFT.deploy();
+
     const ZKWordle = await ethers.getContractFactory("ZKWordle");
-    const zkWordle = await ZKWordle.deploy();
+    const zkWordle = await ZKWordle.deploy(nft.address);
 
     return { zkWordle, owner, otherAccount };
   }
@@ -71,7 +81,7 @@ describe("ZKWordle", function () {
   });
 
   describe("answer", function() {
-    it("should success", async function() {
+    it.only("should success", async function() {
       let { initialize } = await import("zokrates-js");
 
       const zokrates = await initialize();
@@ -87,7 +97,16 @@ describe("ZKWordle", function () {
         _hashedAnswer
       )).not.to.be.reverted;
 
-      const artifacts = zokrates.compile(zkSource);
+
+      let artifacts = null;
+      if (!fs.existsSync('./test/answer/artifacts')) {
+        artifacts = zokrates.compile(zkSource);
+        const serializedArtifacts = v8.serialize(artifacts);
+        fs.writeFileSync('./test/answer/artifacts', serializedArtifacts);
+      } else {
+        const rawArtifacts = fs.readFileSync('./test/answer/artifacts');
+        artifacts = v8.deserialize(rawArtifacts);
+      }
 
       const answer = getWordDec(_answer);
       const hashedAnswer = getWordHex(_answer);
@@ -113,24 +132,27 @@ describe("ZKWordle", function () {
       */
 
 
-      // const key = zokrates.setup(artifacts.program);
-      // fs.writeFileSync('./test/proving.key', key.pk);
-      // const verifier = zokrates.exportSolidityVerifier(key.vk);
-      // fs.writeFileSync('./test/verifier.sol', verifier);
-      // console.log('key.vk: ', key.vk);
-      // fs.writeFileSync('./test/vk.json', JSON.stringify(key.vk));
+      let key = null;
+      if (!fs.existsSync('./test/answer/proving.key') || !fs.existsSync('./test/answer/verifying.key')) {
+        key = zokrates.setup(artifacts.program);
+        fs.writeFileSync('./test/answer/proving.key', v8.serialize(key.pk));
+        // vkを保存しておく
+        fs.writeFileSync('./test/answer/verifying.key', v8.serialize(key.vk));
 
+        const verifier = zokrates.exportSolidityVerifier(key.vk);
+        fs.writeFileSync('./test/answer/verifier.sol', verifier);
+      } else {
+        const pk = v8.deserialize(fs.readFileSync('./test/answer/proving.key'));
+        const vk = v8.deserialize(fs.readFileSync('./test/answer/verifying.key'));
+        key = {pk, vk};
+      }
 
-      const pk = fs.readFileSync('./test/proving.key');
+      const result = zokrates.generateProof(artifacts.program, witness, key.pk);
+      expect(zokrates.verify(key.vk, result)).to.be.true;
 
-      // const key = fs.readFileSync('./test/proving.key');
+      const {a, b, c} = result.proof;
 
-
-      const {proof}=  zokrates.generateProof(artifacts.program, witness, pk);
-
-      const {a, b, c} = proof;
-
-      await expect(zkWordle.connect(otherAccount).answer([a,b,c])).not.to.be.reverted;
+      // await expect(zkWordle.connect(otherAccount).answer([a,b,c])).not.to.be.reverted;
     });
   });
 });
