@@ -54,9 +54,9 @@ library NFTDescriptor {
         return
             string(
                 abi.encodePacked(
-                    'This NFT represents you clear the game and get the "',
+                    'This NFT represents you clear the game and get the ',
                     _word,
-                    '" in a ZKWordle'
+                    ' in a ZKWordle'
                 )
             );
     }
