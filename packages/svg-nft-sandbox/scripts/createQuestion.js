@@ -14,7 +14,7 @@ const master  = require('../test/wordleMaster');
 
 async function main () {
   const ZKWordle = await ethers.getContractFactory("ZKWordle");
-  const address = "0xD29752eB55DEF82d116D128E62c01E50a8F76cA2";
+  const address = "0x22f5887ae1bc1E941090CCf00356F897856102dE";
   const zkWordle = await ZKWordle.attach(address);
   const nonce = await zkWordle.getLatestNonce();
   console.log(nonce);
@@ -27,12 +27,13 @@ async function main () {
   const answer = wordles[index];
   console.log(answer);
 
-  // const hash = utils.sha256(utils.toUtf8Bytes(answer));
+  const hash = utils.sha256(utils.toUtf8Bytes(answer));
 
   // console.log(hash);
 
-  // const questionTx = await zkWordle.createQuestion(hash);
-  // await questionTx.wait();
+  const questionTx = await zkWordle.createQuestion(hash);
+  await questionTx.wait();
+  console.log('ok');
 }
 
 // We recommend this pattern to be able to use async/await everywhere
