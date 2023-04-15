@@ -8,12 +8,71 @@ import { json } from "@remix-run/cloudflare";
 import { Form } from "@remix-run/react";
 import { Word } from "~/models/Word";
 import { ActionArgs } from "@remix-run/cloudflare";
-import { providers, Contract, BigNumber } from "ethers";
+import { providers, Contract, BigNumber, utils } from "ethers";
 import zkWordleAbi from "../../abi/zkWordle.json";
-import { wodles } from "../../../svg-nft-sandbox/test/wordleMaster";
+import { useWriteAnswer } from "~/hooks/useWriteAnswer";
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
+
+const zkSource = `
+import "hashes/sha256/sha256Padded";
+def main(private u8[5] word, u32[8] expectedHash,private  u32[8] addressUint, u32[8] pubAddressUint) -> bool {
+    u32[8] hash = sha256Padded(word);
+    assert(hash == expectedHash);
+    assert(addressUint == pubAddressUint);
+    return true;
+}
+`;
+
+
+const splitByChunk = (str: string, size: number) => {
+  const numChunks = Math.ceil(str.length / size)
+  const chunks = new Array(numChunks)
+  for (let i = 0, x = 0; i < numChunks; ++i, x += size) {
+      chunks[i] = str.substr(x, size)
+  }
+  return chunks
+}
+
+const fetchProvingKey = async () => {
+  const res = await fetch("/zkp/answer/proving_raw.key");
+  // resをv8.deserializeする
+  const data = await res.arrayBuffer();
+  // const deserialized = v8.deserialize(new Uint8Array(data));
+  return new Uint8Array(data);
+ 
+}
+
+const getWordDec = (word: string) => {
+  return [...word].map(c => c.charCodeAt(0).toString());
+}
+
+
+const getWordHex = (word: string) => {
+  const hex = utils.sha256(utils.toUtf8Bytes(word)).slice(2);
+  console.log(`hex: ${hex}`);
+  const chunked = splitByChunk(hex, 8).map(e => `0x${e}`);
+  return chunked.map(e => parseInt(e, 16).toString());
+}
+
+const addressToUintArray = (address: string) => {
+  // Remove the '0x' prefix from the address
+  address = address.replace(/^0x/, '');
+
+  // Convert the address to a BigInt
+  const addressBigInt = BigInt(`0x${address}`);
+
+  // Create an empty array for the result
+  const result = new Array(8);
+
+  // Split the BigInt into chunks of 32 bits
+  for (let i = 0; i < 8; i++) {
+      result[7 - i] = Number(addressBigInt >> BigInt(32 * i) & 0xFFFFFFFFn).toString();
+  }
+
+  return result;
+}
 
 export async function action({ request, context: { auth } }: ActionArgs) {
   // TODO: wordleMasterから直接読み込む
@@ -37,7 +96,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
   });
   // contractからnonceを取得
   const zkWordle = new Contract(
-    "0x7F8aE4020E3991E7e9b535527D2d5BA5D29a593B",
+    "0x22f5887ae1bc1E941090CCf00356F897856102dE",
     zkWordleAbi,
     provider
   );
@@ -77,7 +136,8 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 // ----------------------------------------------------------------------------------------
 
 export default function Game() {
-  const answerWord: string = "REACT";
+  const {writeAnswer, signer} = useWriteAnswer();
+  const answerWord: string = "MOKKY";
 
   type LetterRowState = {
     state: string;
@@ -233,11 +293,54 @@ export default function Game() {
   };
 
   useEffect(() => {
-    if (correctLetters.length === 5) {
-      setClearStatus(true);
-      setMessage("Is correct!");
-    }
-  }, [correctLetters]);
+    (async () => {
+      if (correctLetters.length === 5) {
+        setClearStatus(true);
+        setMessage("Is correct!");
+        let { initialize } = await import("zokrates-js");
+  
+        const zokrates = await initialize();
+        const artifacts = zokrates.compile(zkSource);
+        console.log(artifacts);
+        const answerRaw = correctLetters.join('').toLowerCase();
+        console.log(answerRaw);
+        const answerDec = getWordDec(answerRaw);
+        const hashedAnswer = getWordHex(answerRaw);
+        const address = await signer?.getAddress();
+        if (!address) {
+          alert('Please connect to metamask')
+          return;
+        }
+        const uintAddress = addressToUintArray(address);
+
+        // 引数全部をconsole.log
+        console.log(answerDec);
+        console.log(hashedAnswer);
+        console.log(uintAddress);
+        console.log(uintAddress);
+
+        console.log(`address: ${address}}`);
+
+
+        const {witness} = zokrates.computeWitness(artifacts, [answerDec, hashedAnswer, uintAddress, uintAddress]);
+
+
+        // // /zkp/answer/proving.keyをfetchする
+        const pk = await fetchProvingKey();
+        console.log(pk);
+
+
+        const {proof} =  zokrates.generateProof(artifacts.program, witness, pk);
+        // @ts-ignore
+        const {a, b, c} = proof;
+
+        // const verifyied = zokrates.verify() 
+
+        // TODO colors
+        await writeAnswer([a,b,c], answerRaw);
+      }
+    })();
+  }, [correctLetters, signer]);
 
   useEffect(() => {
     if (answeredCount === 6) {
