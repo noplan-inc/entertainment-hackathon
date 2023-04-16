@@ -25,7 +25,6 @@ contract ZKWordle is Ownable, AnswerVerifier {
     function createQuestion(bytes32 _answerHash) public onlyOwner {
         uint256 _round = round.current();
         questions[_round] = _answerHash;
-        round.increment();
     }
 
     // RANDAOの値を返すview関数
@@ -58,7 +57,7 @@ contract ZKWordle is Ownable, AnswerVerifier {
     }
 
     function getAnswerHash() public view returns (bytes32) {
-        uint256 _round = round.current() - 1;
+        uint256 _round = round.current();
         return questions[_round];
     }
 
@@ -71,6 +70,8 @@ contract ZKWordle is Ownable, AnswerVerifier {
 
         // TOOD: すでに回答された問題は回答できない
         uint[8] memory _answer = bytes32ToUintArray(hash);
+
+        round.increment();
 
         require(
             super.verifyAnswer(proof, _answer, msg.sender),

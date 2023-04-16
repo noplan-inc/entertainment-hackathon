@@ -14,10 +14,10 @@ const master  = require('../test/wordleMaster');
 
 async function main () {
   const ZKWordle = await ethers.getContractFactory("ZKWordle");
-  const address = "0x571590541A10a1Aec895F16E5f6601B4Eec7eb35";
+  const address = "0x7C372a3E9c275632cF10b2095746e55833Ea5407";
   const zkWordle = await ZKWordle.attach(address);
-  const nonceTx = await zkWordle.setNonce();
-  await nonceTx.wait();
+  // const nonceTx = await zkWordle.setNonce();
+  // await nonceTx.wait();
   const nonce = await zkWordle.getLatestNonce();
   console.log(nonce);
 
