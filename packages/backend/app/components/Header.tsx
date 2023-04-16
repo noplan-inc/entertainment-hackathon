@@ -3,7 +3,7 @@ import { ConnectWallet } from "./ConnectWallet";
 const Header = () => {
   return (
     <header className="flex">
-      Blockchain Wordle
+      ZKWordle
       <div>
         <ConnectWallet />
       </div>
