@@ -109,7 +109,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 
   console.log(word);
 
-  const rpcUrl = "https://rpc.ankr.com/eth_goerli";
+  const rpcUrl = "https://goerli.blockpi.network/v1/rpc/public";
   // superflareでは、fetch POSTするとき現状referrerを設定しないとエラーになる
   const provider = new providers.StaticJsonRpcProvider({
     url: rpcUrl,
