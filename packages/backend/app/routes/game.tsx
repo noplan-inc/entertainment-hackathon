@@ -114,9 +114,9 @@ export async function action({ request, context: { auth } }: ActionArgs) {
   const provider = new providers.StaticJsonRpcProvider({
     url: rpcUrl,
     skipFetchSetup: true,
-    fetchOptions: {
-      referrer: rpcUrl,
-    },
+    // fetchOptions: {
+    //   referrer: rpcUrl,
+    // },
   });
   // contractからnonceを取得
   const zkWordle = new Contract(
