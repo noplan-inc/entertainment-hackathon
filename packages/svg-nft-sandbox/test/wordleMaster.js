@@ -1,4 +1,4 @@
-exports.wodles = [
+exports.wordles = [
         "shoos",
         "pooks",
         "huger",

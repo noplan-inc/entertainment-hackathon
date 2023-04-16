@@ -4,7 +4,7 @@ const {
 const { expect } = require("chai");
 const { BigNumber } = require("ethers");
 
-describe("ZKWordle", function () {
+describe("ZKWordleNFT", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
@@ -35,7 +35,7 @@ describe("ZKWordle", function () {
 
   describe("tokenURI", function () {
     it("Should success", async function () {
-      const { nft } = await loadFixture(deployFixture);
+      const { nft, owner } = await loadFixture(deployFixture);
 
       const tokenId = BigNumber.from(1);
       const black = BigNumber.from(1);
@@ -54,7 +54,8 @@ describe("ZKWordle", function () {
       ];
       // colorsをフラット化
       const colorsFlat = colors.flat();
-      const tokenURI = await nft.tokenURI2(tokenId, word, nonce, colorsFlat);
+      await nft.mint(owner.address, tokenId, word, nonce, colorsFlat);
+      const tokenURI = await nft.tokenURI(tokenId);
       console.log(tokenURI);
     });
   });

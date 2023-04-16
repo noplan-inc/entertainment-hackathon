@@ -1,21 +1,29 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import './libraries/NFTDescriptor.sol';
 
 /// @title Describes NFT token positions
 /// @notice Produces a string containing the data URI for a JSON metadata string
-contract ZKWordleNFT is ERC721 {
+contract ZKWordleNFT is ERC721, AccessControl {
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
 
     constructor()ERC721("ZKWordleNFT", "ZKW") {
+        _setupRole(MINTER_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     mapping(uint256 => NFTDescriptor.ConstructTokenURIParams) public tokenURIParams;
 
-    function mint(address userAddress, uint256 _tokenId, string memory _word, uint256 _nonce, uint256[30] memory _colors) public {
+    function setMinter(address _minter) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _setupRole(MINTER_ROLE, _minter);
+    }
+
+    function mint(address userAddress, uint256 _tokenId, string memory _word, uint256 _nonce, uint256[30] memory _colors) public onlyRole(MINTER_ROLE) {
         string memory black = "#000";
         string memory yellow = "#ffcc00";
         string memory green = "#00cc00";
@@ -47,14 +55,23 @@ contract ZKWordleNFT is ERC721 {
     }
 
     // ERC721のtokenURIと被るとethers.jsがバグって呼び出せなくなるるので一旦別名で定義
-    function tokenURI2(uint256 _tokenId)
-    // function tokenURI()
+    function tokenURI(uint256 _tokenId)
         public
         view
+        override
         returns (string memory)
     {
         NFTDescriptor.ConstructTokenURIParams memory constructTokenURIParams = tokenURIParams[_tokenId];
 
         return NFTDescriptor.constructTokenURI(constructTokenURIParams);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(AccessControl, ERC721)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }

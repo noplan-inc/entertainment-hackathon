@@ -1,31 +1,114 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Board from "~/components/Board";
 import Keyboard from "~/components/KeyBoard";
 import Layout from "~/components/Layout";
 import Message from "~/components/Message";
 
 import { json } from "@remix-run/cloudflare";
-import { Form } from "@remix-run/react";
+import { Form, useActionData } from "@remix-run/react";
 import { Word } from "~/models/Word";
 import { ActionArgs } from "@remix-run/cloudflare";
-import { providers, Contract, BigNumber } from "ethers";
+import { providers, Contract, BigNumber, utils } from "ethers";
 import zkWordleAbi from "../../abi/zkWordle.json";
-import { wodles } from "../../../svg-nft-sandbox/test/wordleMaster";
+import { useWriteAnswer } from "~/hooks/useWriteAnswer";
+import { useSubmit } from "@remix-run/react";
+import { decode } from '@msgpack/msgpack';
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
+
+const zkSource = `
+import "hashes/sha256/sha256Padded";
+def main(private u8[5] word, u32[8] expectedHash,private  u32[8] addressUint, u32[8] pubAddressUint) -> bool {
+    u32[8] hash = sha256Padded(word);
+    assert(hash == expectedHash);
+    assert(addressUint == pubAddressUint);
+    return true;
+}
+`;
+
+
+const splitByChunk = (str: string, size: number) => {
+  const numChunks = Math.ceil(str.length / size)
+  const chunks = new Array(numChunks)
+  for (let i = 0, x = 0; i < numChunks; ++i, x += size) {
+    chunks[i] = str.substr(x, size)
+  }
+  return chunks
+}
+
+const fetchProvingKey = async () => {
+  const res = await fetch("/zkp/answer/proving_raw.key");
+  // resをv8.deserializeする
+  const data = await res.arrayBuffer();
+  // const deserialized = v8.deserialize(new Uint8Array(data));
+  return new Uint8Array(data);
+}
+
+const fetchWordCheckerProvingKey = async () => {
+  const res = await fetch("/zkp/hint/proving.key");
+  // resをv8.deserializeする
+  const data = await res.arrayBuffer();
+  // const deserialized = v8.deserialize(new Uint8Array(data));
+  return new Uint8Array(data);
+}
+
+const fetchWordCheckerArtifacts = async (): Promise<any> => {
+  const res = await fetch("/zkp/hint/wordChecker-artifacts");
+  // resをv8.deserializeする
+  const data = await res.arrayBuffer();
+  console.log(data.byteLength);
+  // const deserialized = v8.deserialize(new Uint8Array(data));
+  return decode(data) as any;
+}
+
+const getWordDec = (word: string) => {
+  return [...word].map(c => c.charCodeAt(0).toString());
+}
+
+
+const getWordHex = (word: string) => {
+  const hex = utils.sha256(utils.toUtf8Bytes(word)).slice(2);
+  console.log(`hex: ${hex}`);
+  const chunked = splitByChunk(hex, 8).map(e => `0x${e}`);
+  return chunked.map(e => parseInt(e, 16).toString());
+}
+
+const addressToUintArray = (address: string) => {
+  // Remove the '0x' prefix from the address
+  address = address.replace(/^0x/, '');
+
+  // Convert the address to a BigInt
+  const addressBigInt = BigInt(`0x${address}`);
+
+  // Create an empty array for the result
+  const result = new Array(8);
+
+  // Split the BigInt into chunks of 32 bits
+  for (let i = 0; i < 8; i++) {
+    result[7 - i] = Number(addressBigInt >> BigInt(32 * i) & 0xFFFFFFFFn).toString();
+  }
+
+  return result;
+}
 
 export async function action({ request, context: { auth } }: ActionArgs) {
   // TODO: wordleMasterから直接読み込む
 
+  console.log(request.url)
+  // urlからquery stringのwordを取得する
+  const url = new URL(request.url);
+  const urlWord = url.searchParams.get("word") || "";
+
   const formData = new URLSearchParams(await request.text());
-  const word = formData.get("word");
+  const word = formData.get("word") || urlWord;
   const proof = formData.get("proof");
-  // words tableに存在するか確認 ZKでやるとこ
-  const words = await Word.where("text", word);
-  if (!words.length) {
-    throw Error("word does not exist!!!!");
+
+  if (!word) {
+    return json({ error: "word is required" }, { status: 400 });
   }
+
+  console.log(word);
 
   const rpcUrl = "https://rpc.ankr.com/eth_goerli";
   // superflareでは、fetch POSTするとき現状referrerを設定しないとエラーになる
@@ -37,34 +120,35 @@ export async function action({ request, context: { auth } }: ActionArgs) {
   });
   // contractからnonceを取得
   const zkWordle = new Contract(
-    "0x7F8aE4020E3991E7e9b535527D2d5BA5D29a593B",
+    "0x22f5887ae1bc1E941090CCf00356F897856102dE",
     zkWordleAbi,
     provider
   );
   const nonce = await zkWordle.getLatestNonce();
   // console.log("nonce")
   // console.log(nonce.toString())
+  const { master } = await import("../wordle");
 
-  // nonceから正解の単語を導く
-  let wordsCount = BigNumber.from(await Word.count());
-  let wordIndex = nonce.mod(wordsCount).toNumber();
+  const wordIndex = nonce.mod(master.length).toNumber();
   console.log("wordIndex is ", wordIndex);
-  let correctWord = (await Word.find(wordIndex + 1)).text;
-  // console.log("correctWord")
-  // console.log(correctWord)
+  const correctWord = master[wordIndex];
+  console.log("correctWord")
+  console.log(correctWord)
+
+  type Wordle = "correct" | "present" | "absent";
 
   // 入力された単語が正解の単語に含まれてるか調べる
-  let matchings = [];
+  let matchings: Wordle[] = [];
   for (let i = 0; i < word.length; i++) {
     if (word[i] == correctWord[i]) {
-      matchings[i] = "match";
+      matchings[i] = "correct";
       continue;
     }
     if (correctWord.includes(word[i])) {
-      matchings[i] = "included";
+      matchings[i] = "present";
       continue;
     }
-    matchings[i] = "none";
+    matchings[i] = "absent";
   }
 
   console.log("{ word: word, matchings: matchings }");
@@ -76,8 +160,14 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
 
+let initAnswer = false;
+
 export default function Game() {
-  const answerWord: string = "REACT";
+  const { writeAnswer, signer } = useWriteAnswer();
+  const submit = useSubmit();
+  const hintData = useActionData<typeof action>();
+  const formRef = useRef<HTMLFormElement>(null);
+  const wordRef = useRef<HTMLInputElement>(null);
 
   type LetterRowState = {
     state: string;
@@ -107,13 +197,16 @@ export default function Game() {
     InitialLetterRowStates
   );
   const [isClear, setClearStatus] = useState<boolean>(false);
-  const [isChecking, setChekingState] = useState<boolean>(false);
+  const [isChecking, setCheckingState] = useState<boolean>(false);
   const [answeredCount, setAnsweredCount] = useState<number>(0);
   const [letterCount, setLetterCount] = useState<number>(0);
   const [correctLetters, setCorrectLetters] = useState<string[]>([]);
   const [presentLetters, setPresentLetters] = useState<string[]>([]);
   const [absentLetters, setAbsentLetters] = useState<string[]>([]);
   const [message, setMessage] = useState<string>("");
+
+  const [isRead, setReadStatus] = useState<boolean>(false);
+
 
   const addLetter = (letter: string) => {
     if (letterCount < 5 && answeredCount < 6) {
@@ -143,9 +236,46 @@ export default function Game() {
     }
   };
 
-  const addCorrectLetters = (letter: string) => {
+  const addCorrectLetters = async (letter: string) => {
     if (correctLetters.indexOf(letter) === -1) {
-      setCorrectLetters((prevLetters) => [...prevLetters, letter]);
+      setCorrectLetters((prevLetters) => {
+        return [...prevLetters, letter];
+      });
+    }
+
+    const answerRaw = (correctLetters.join('') + letter).toLowerCase();
+
+    if (correctLetters.length === 4 && !initAnswer) {
+      initAnswer = true;
+      setClearStatus(true);
+      setMessage("Is correct!");
+      let { initialize } = await import("zokrates-js");
+
+      const zokrates = await initialize();
+      const artifacts = zokrates.compile(zkSource);
+      console.log(artifacts);
+      // const answerRaw = correctLetters.join('').toLowerCase();
+      console.log(answerRaw);
+      const answerDec = getWordDec(answerRaw);
+      const hashedAnswer = getWordHex(answerRaw);
+      const address = await signer?.getAddress();
+      if (!address) {
+        alert('Please connect to metamask')
+        return;
+      }
+      const uintAddress = addressToUintArray(address);
+
+      // 引数全部をconsole.log
+      const { witness } = zokrates.computeWitness(artifacts, [answerDec, hashedAnswer, uintAddress, uintAddress]);
+
+      const pk = await fetchProvingKey();
+
+      const { proof } = zokrates.generateProof(artifacts.program, witness, pk);
+      // @ts-ignore
+      const { a, b, c } = proof;
+
+      // TODO colors
+      await writeAnswer([a, b, c], answerRaw);
     }
   };
 
@@ -161,32 +291,68 @@ export default function Game() {
     }
   };
 
-  // TODO: 現在はフロントでwordle比較を仮でしています。APIとの繋ぎ込みで以下は修正
-  const answer = () => {
+  // formのsubmitボタンを押した時の処理
+  const handleSubmit = async (event: any) => {
+    const f = formRef.current;
+
+    const word = letterRowStates[answeredCount].letterStates.map(el => el.letter).join('');
+    if (!wordRef.current) {
+      return;
+    }
+    wordRef.current.value = word.toLowerCase();
+
+    submit(event.currentTarget);
+  }
+
+  const answer = async () => {
+    setTimeout(() => {
+      setReadStatus(true);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    if (!hintData || !isRead) return;
     if (answeredCount !== 6 && !isClear) {
       if (!isChecking) {
         if (letterCount === 5) {
-          setChekingState(true);
+          setCheckingState(true);
+
+          /* HINT ZKP
+          const { initialize } = await import("zokrates-js");
+          const zokrates = await initialize();
+          const artifacts = await fetchWordCheckerArtifacts();
+          console.log(artifacts);
+          const pk = await fetchWordCheckerProvingKey();
+
+          const word = letterRowStates[answeredCount].letterStates.map(el => el.letter).join('');
+          console.log(`word: ${JSON.stringify(word)}`);
+          const encoded = new TextEncoder().encode(word).join(',');
+          console.log(`encoded: ${encoded}`);
+          try {
+            const {witness, output} = zokrates.computeWitness(artifacts, [encoded.split(',')]);
+            console.log(witness);
+
+          } catch (e) {
+            console.log('witness error')
+            console.log(e);
+          }
+          */
 
           const promiseList: Promise<void>[] = [];
 
           for (let i = 0; i < 5; i++) {
             const promise: Promise<void> = new Promise((resolve) => {
               setTimeout(() => {
-                let state: string;
-                const checkLetter =
-                  letterRowStates[answeredCount].letterStates[i].letter;
-                if (checkLetter === answerWord[i]) {
-                  state = "correct";
-                } else if (answerWord.indexOf(checkLetter) !== -1) {
-                  state = "present";
-                } else {
-                  state = "absent";
-                }
+                if (!hintData) return;
+                console.log(`effect in:`)
+                console.log(hintData);
 
                 setLetterRowStates((prevState) => {
                   const copyForUpdate = prevState.slice();
-                  copyForUpdate[answeredCount].letterStates[i].state = state;
+                  // @ts-ignore
+                  console.log(hintData.matchings[i]);
+                  // @ts-ignore
+                  copyForUpdate[answeredCount].letterStates[i].state = hintData.matchings[i];
                   return copyForUpdate;
                 });
 
@@ -199,9 +365,11 @@ export default function Game() {
           Promise.all(promiseList).then(() => {
             letterRowStates[answeredCount].letterStates.forEach(
               (letterState, i) => {
-                if (letterState.letter === answerWord[i]) {
+                // @ts-ignore
+                if (hintData.matchings[i] === 'correct') {
                   addCorrectLetters(letterState.letter);
-                } else if (answerWord.indexOf(letterState.letter) !== -1) {
+                  // @ts-ignore
+                } else if (hintData.matchings[i] === 'present') {
                   addPresentLetters(letterState.letter);
                 } else {
                   addAbsentLetters(letterState.letter);
@@ -211,7 +379,7 @@ export default function Game() {
 
             setAnsweredCount((prevState) => prevState + 1);
             setLetterCount(0);
-            setChekingState(false);
+            setCheckingState(false);
           });
         } else {
           setLetterRowStates((prevState) => {
@@ -230,20 +398,8 @@ export default function Game() {
         }
       }
     }
-  };
-
-  useEffect(() => {
-    if (correctLetters.length === 5) {
-      setClearStatus(true);
-      setMessage("Is correct!");
-    }
-  }, [correctLetters]);
-
-  useEffect(() => {
-    if (answeredCount === 6) {
-      setMessage(`${answerWord} is correct`);
-    }
-  }, [answeredCount]);
+    setReadStatus(false);
+  }, [hintData, isRead, answeredCount]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -256,22 +412,20 @@ export default function Game() {
       <Layout>
         <Message message={message} />
         <Board letterRowStates={letterRowStates} />
-        <Keyboard
-          correctLetters={correctLetters}
-          presentLetters={presentLetters}
-          absentLetters={absentLetters}
-          addLetter={addLetter}
-          deleteLetter={deleteLetter}
-          answer={answer}
-        />
+        <Form method="post" ref={formRef} onSubmit={handleSubmit}>
+          <Keyboard
+            correctLetters={correctLetters}
+            presentLetters={presentLetters}
+            absentLetters={absentLetters}
+            addLetter={addLetter}
+            deleteLetter={deleteLetter}
+            answer={answer}
+          />
+          <div style={{ display: 'none' }}>
+            <input name="word" type="text" ref={wordRef} />
+          </div>
+        </Form>
       </Layout>
-
-      <Form method="post">
-        <label htmlFor="word">Word</label>
-        <input name="word" type="text" />
-        <button type="submit">submit</button>
-      </Form>
-      <p></p>
     </>
   );
 }
