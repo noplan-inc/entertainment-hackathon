@@ -14,7 +14,7 @@ const master  = require('../test/wordleMaster');
 
 async function main () {
   const ZKWordle = await ethers.getContractFactory("ZKWordle");
-  const address = "0x7C372a3E9c275632cF10b2095746e55833Ea5407";
+  const address = "0xEF7AaeCE5d11e0BE9a3065a67bD8Ede62F8a783d";
   const zkWordle = await ZKWordle.attach(address);
   // const nonceTx = await zkWordle.setNonce();
   // await nonceTx.wait();

@@ -8,7 +8,7 @@ const zkSource = fs.readFileSync('../zkp/wordChecker/wordChecker.zok', 'utf-8');
 
 describe("HintProve", function () {
   describe("prove", function() {
-    it.only("should success", async function() {
+    it("should success", async function() {
       let { initialize } = await import("zokrates-js");
 
       const zokrates = await initialize();

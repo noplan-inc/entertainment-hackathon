@@ -121,7 +121,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
   });
   // contractからnonceを取得
   const zkWordle = new Contract(
-    "0x7C372a3E9c275632cF10b2095746e55833Ea5407",
+    "0xEF7AaeCE5d11e0BE9a3065a67bD8Ede62F8a783d",
     zkWordleAbi,
     provider
   );
@@ -360,8 +360,8 @@ export default function Game() {
                   const copyForUpdate = prevState.slice();
                   // @ts-ignore
                   console.log(hintData.matchings[i]);
-                  // @ts-ignore
                   copyForUpdate[answeredCount].letterStates[i].state =
+                  // @ts-ignore
                     hintData.matchings[i];
                   return copyForUpdate;
                 });
