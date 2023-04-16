@@ -6,9 +6,8 @@ import Message from "~/components/Message";
 
 import { json } from "@remix-run/cloudflare";
 import { Form, useActionData } from "@remix-run/react";
-import { Word } from "~/models/Word";
 import { ActionArgs } from "@remix-run/cloudflare";
-import { providers, Contract, BigNumber, utils } from "ethers";
+import { providers, Contract, utils } from "ethers";
 import zkWordleAbi from "../../abi/zkWordle.json";
 import { useWriteAnswer } from "~/hooks/useWriteAnswer";
 import { useSubmit } from "@remix-run/react";
@@ -112,7 +111,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 
   const rpcUrl = "https://rpc.ankr.com/eth_goerli";
   // superflareでは、fetch POSTするとき現状referrerを設定しないとエラーになる
-  const provider = new providers.JsonRpcProvider({
+  const provider = new providers.StaticJsonRpcProvider({
     url: rpcUrl,
     skipFetchSetup: true,
     fetchOptions: {
