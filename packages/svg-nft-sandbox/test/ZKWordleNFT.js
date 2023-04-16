@@ -3,6 +3,7 @@ const {
 } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 const { BigNumber } = require("ethers");
+const { base64 } = require("ethers/lib/utils");
 
 describe("ZKWordleNFT", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -56,7 +57,11 @@ describe("ZKWordleNFT", function () {
       const colorsFlat = colors.flat();
       await nft.mint(owner.address, tokenId, word, nonce, colorsFlat);
       const tokenURI = await nft.tokenURI(tokenId);
-      console.log(tokenURI);
+      const base64Encoded = tokenURI.split(",")[1];
+      const decodedJsonStr = new TextDecoder().decode(base64.decode(base64Encoded));
+      const base64Svg = JSON.parse(decodedJsonStr).image.split(",")[1];
+      const svgImage = new TextDecoder().decode(base64.decode(base64Svg));
+      console.log(svgImage);
     });
   });
 });
