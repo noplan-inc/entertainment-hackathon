@@ -114,6 +114,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
   // superflareでは、fetch POSTするとき現状referrerを設定しないとエラーになる
   const provider = new providers.JsonRpcProvider({
     url: rpcUrl,
+    skipFetchSetup: true,
     fetchOptions: {
       referrer: rpcUrl,
     },
