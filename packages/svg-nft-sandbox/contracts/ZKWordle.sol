@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./AnswerVerifier.sol";
 import "./ZKWordleNFT.sol";
-import "hardhat/console.sol";
 
 contract ZKWordle is Ownable, AnswerVerifier {
     using Counters for Counters.Counter;
@@ -24,9 +23,9 @@ contract ZKWordle is Ownable, AnswerVerifier {
     }
 
     function createQuestion(bytes32 _answerHash) public onlyOwner {
+        round.increment();
         uint256 _round = round.current();
         questions[_round] = _answerHash;
-        round.increment();
     }
 
     // RANDAOの値を返すview関数
@@ -54,12 +53,12 @@ contract ZKWordle is Ownable, AnswerVerifier {
     }
 
     function getLatestNonce() public view returns (uint256) {
-        uint256 _round = round.current();
+        uint256 _round = round.current(); 
         return nonces[_round];
     }
 
     function getAnswerHash() public view returns (bytes32) {
-        uint256 _round = round.current() - 1;
+        uint256 _round = round.current();
         return questions[_round];
     }
 
@@ -72,7 +71,6 @@ contract ZKWordle is Ownable, AnswerVerifier {
 
         // TOOD: すでに回答された問題は回答できない
         uint[8] memory _answer = bytes32ToUintArray(hash);
-        console.log("answer");
 
         require(
             super.verifyAnswer(proof, _answer, msg.sender),

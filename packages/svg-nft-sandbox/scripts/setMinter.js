@@ -15,13 +15,13 @@ const master  = require('../test/wordleMaster');
 async function main () {
   const NFT = await ethers.getContractFactory("ZKWordleNFT", {
     libraries: {
-      NFTDescriptor: "0x8B42fF11cDeAa58AE5b3a3CD5f18EB278FdD353E",
+      NFTDescriptor: "0xC4b8d3429F5E18604693155d0D30Da11aE1cE747",
     },
   });
 
-  const nftAddress = "0x5a0CFE0D1A3Ee68c1D2254B408c529C2C8129960";
+  const nftAddress = "0xC224bb146B3c5C2498C67794ae0e746C27Ef862c";
   const nft = await NFT.attach(nftAddress);
-  const wordleAddress = '0x22f5887ae1bc1E941090CCf00356F897856102dE'
+  const wordleAddress = '0xe6f79807EBC200348bD57aE8b52560B0498c8884'
   const minterTx = await nft.setMinter(wordleAddress);
   await minterTx.wait();
   console.log('ok')
