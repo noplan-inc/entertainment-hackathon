@@ -21,7 +21,7 @@ async function main () {
 
   const nftAddress = "0xC224bb146B3c5C2498C67794ae0e746C27Ef862c";
   const nft = await NFT.attach(nftAddress);
-  const wordleAddress = '0x571590541A10a1Aec895F16E5f6601B4Eec7eb35'
+  const wordleAddress = '0x7C372a3E9c275632cF10b2095746e55833Ea5407'
   const minterTx = await nft.setMinter(wordleAddress);
   await minterTx.wait();
   console.log('ok')

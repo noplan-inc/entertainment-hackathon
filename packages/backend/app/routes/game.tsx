@@ -120,7 +120,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
   });
   // contractからnonceを取得
   const zkWordle = new Contract(
-    "0x571590541A10a1Aec895F16E5f6601B4Eec7eb35",
+    "0x7C372a3E9c275632cF10b2095746e55833Ea5407",
     zkWordleAbi,
     provider
   );
