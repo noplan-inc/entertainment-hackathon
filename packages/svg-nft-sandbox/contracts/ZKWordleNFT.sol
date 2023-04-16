@@ -24,7 +24,7 @@ contract ZKWordleNFT is ERC721, AccessControl {
     }
 
     function mint(address userAddress, uint256 _tokenId, string memory _word, uint256 _nonce, uint256[30] memory _colors) public onlyRole(MINTER_ROLE) {
-        string memory black = "#000";
+        string memory black = "#3a3a3c";
         string memory yellow = "#ffcc00";
         string memory green = "#00cc00";
         string[5][6] memory colors;
