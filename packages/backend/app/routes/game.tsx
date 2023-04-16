@@ -478,7 +478,7 @@ export default function Game() {
                 {isLoading && <div className="loader"></div>}
                 {isGetNft && (
                   <div className="svg-image-nft">
-                    <img src={`data:image/svg+xml;utf8,${svg}`} alt="nft" />
+                    <img src={`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`} alt="nft" />
                   </div>
                 )}
               </div>
