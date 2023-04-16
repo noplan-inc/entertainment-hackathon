@@ -79,6 +79,15 @@ header {
   border-bottom: 1px solid #3a3a3c;
 }
 
+button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+  appearance: none;
+}
+
 .message {
   position: fixed;
   text-align: center;
@@ -229,4 +238,118 @@ header {
 .row .one-and-a-half {
   flex: 1.5;
   font-size: 12px;
+}
+
+.btn-connect {
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: 700;
+  background-color: #818384;
+  color: #d7dadc;
+  padding: 4px 8px;
+  margin-top: 12px;
+}
+
+.btn-connect {
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: 700;
+  background-color: #818384;
+  color: #d7dadc;
+  padding: 4px 8px;
+  margin-top: 12px;
+}
+
+.text-connected {
+  font-size: 1rem;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.3s;
+}
+
+.modal-content {
+  width: 500px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #7b7b7be8;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  animation: scaleIn 0.3s;
+}
+
+.btn-congratulate {
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: 900;
+  background: linear-gradient(33deg, #24a9df 35%, #2bc79d 65%);
+  color: #fff;
+  padding: 4px 8px;
+  margin-top: 12px;
+}
+
+.text-congratulate {
+  font-weight: 900;
+  background: linear-gradient(33deg, #24a9df 35%, #2bc79d 65%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px #6261612e;
+}
+
+.svg-image-nft {
+  margin-top: 24px;
+}
+
+.loader {
+  margin: 22px auto;
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

@@ -11,7 +11,8 @@ import { providers, Contract, utils } from "ethers";
 import zkWordleAbi from "../../abi/zkWordle.json";
 import { useWriteAnswer } from "~/hooks/useWriteAnswer";
 import { useSubmit } from "@remix-run/react";
-import { decode } from '@msgpack/msgpack';
+import { decode } from "@msgpack/msgpack";
+import mockNFT from "../../public/image/mock.svg";
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
@@ -26,15 +27,14 @@ def main(private u8[5] word, u32[8] expectedHash,private  u32[8] addressUint, u3
 }
 `;
 
-
 const splitByChunk = (str: string, size: number) => {
-  const numChunks = Math.ceil(str.length / size)
-  const chunks = new Array(numChunks)
+  const numChunks = Math.ceil(str.length / size);
+  const chunks = new Array(numChunks);
   for (let i = 0, x = 0; i < numChunks; ++i, x += size) {
-    chunks[i] = str.substr(x, size)
+    chunks[i] = str.substr(x, size);
   }
-  return chunks
-}
+  return chunks;
+};
 
 const fetchProvingKey = async () => {
   const res = await fetch("/zkp/answer/proving_raw.key");
@@ -42,7 +42,7 @@ const fetchProvingKey = async () => {
   const data = await res.arrayBuffer();
   // const deserialized = v8.deserialize(new Uint8Array(data));
   return new Uint8Array(data);
-}
+};
 
 const fetchWordCheckerProvingKey = async () => {
   const res = await fetch("/zkp/hint/proving.key");
@@ -50,7 +50,7 @@ const fetchWordCheckerProvingKey = async () => {
   const data = await res.arrayBuffer();
   // const deserialized = v8.deserialize(new Uint8Array(data));
   return new Uint8Array(data);
-}
+};
 
 const fetchWordCheckerArtifacts = async (): Promise<any> => {
   const res = await fetch("/zkp/hint/wordChecker-artifacts");
@@ -59,23 +59,22 @@ const fetchWordCheckerArtifacts = async (): Promise<any> => {
   console.log(data.byteLength);
   // const deserialized = v8.deserialize(new Uint8Array(data));
   return decode(data) as any;
-}
+};
 
 const getWordDec = (word: string) => {
-  return [...word].map(c => c.charCodeAt(0).toString());
-}
-
+  return [...word].map((c) => c.charCodeAt(0).toString());
+};
 
 const getWordHex = (word: string) => {
   const hex = utils.sha256(utils.toUtf8Bytes(word)).slice(2);
   console.log(`hex: ${hex}`);
-  const chunked = splitByChunk(hex, 8).map(e => `0x${e}`);
-  return chunked.map(e => parseInt(e, 16).toString());
-}
+  const chunked = splitByChunk(hex, 8).map((e) => `0x${e}`);
+  return chunked.map((e) => parseInt(e, 16).toString());
+};
 
 const addressToUintArray = (address: string) => {
   // Remove the '0x' prefix from the address
-  address = address.replace(/^0x/, '');
+  address = address.replace(/^0x/, "");
 
   // Convert the address to a BigInt
   const addressBigInt = BigInt(`0x${address}`);
@@ -85,16 +84,18 @@ const addressToUintArray = (address: string) => {
 
   // Split the BigInt into chunks of 32 bits
   for (let i = 0; i < 8; i++) {
-    result[7 - i] = Number(addressBigInt >> BigInt(32 * i) & 0xFFFFFFFFn).toString();
+    result[7 - i] = Number(
+      (addressBigInt >> BigInt(32 * i)) & 0xffffffffn
+    ).toString();
   }
 
   return result;
-}
+};
 
 export async function action({ request, context: { auth } }: ActionArgs) {
   // TODO: wordleMasterから直接読み込む
 
-  console.log(request.url)
+  console.log(request.url);
   // urlからquery stringのwordを取得する
   const url = new URL(request.url);
   const urlWord = url.searchParams.get("word") || "";
@@ -132,8 +133,8 @@ export async function action({ request, context: { auth } }: ActionArgs) {
   const wordIndex = nonce.mod(master.length).toNumber();
   console.log("wordIndex is ", wordIndex);
   const correctWord = master[wordIndex];
-  console.log("correctWord")
-  console.log(correctWord)
+  console.log("correctWord");
+  console.log(correctWord);
 
   type Wordle = "correct" | "present" | "absent";
 
@@ -209,11 +210,9 @@ export default function Game() {
     return correctLetters.length === 5;
   }, [correctLetters]);
 
-
   const handleCommit = async () => {
     if (!isAnswered) return;
-    const answerRaw = correctLetters.join('').toLowerCase();
-
+    const answerRaw = correctLetters.join("").toLowerCase();
 
     setClearStatus(true);
     setMessage("Is correct!");
@@ -228,13 +227,18 @@ export default function Game() {
     const hashedAnswer = getWordHex(answerRaw);
     const address = await signer?.getAddress();
     if (!address) {
-      alert('Please connect to metamask')
+      alert("Please connect to metamask");
       return;
     }
     const uintAddress = addressToUintArray(address);
 
     // 引数全部をconsole.log
-    const { witness } = zokrates.computeWitness(artifacts, [answerDec, hashedAnswer, uintAddress, uintAddress]);
+    const { witness } = zokrates.computeWitness(artifacts, [
+      answerDec,
+      hashedAnswer,
+      uintAddress,
+      uintAddress,
+    ]);
 
     const pk = await fetchProvingKey();
 
@@ -244,8 +248,7 @@ export default function Game() {
 
     // TODO colors
     await writeAnswer([a, b, c], answerRaw);
-  }
-
+  };
 
   const addLetter = (letter: string) => {
     if (letterCount < 5 && answeredCount < 6) {
@@ -299,14 +302,16 @@ export default function Game() {
   const handleSubmit = async (event: any) => {
     const f = formRef.current;
 
-    const word = letterRowStates[answeredCount].letterStates.map(el => el.letter).join('');
+    const word = letterRowStates[answeredCount].letterStates
+      .map((el) => el.letter)
+      .join("");
     if (!wordRef.current) {
       return;
     }
     wordRef.current.value = word.toLowerCase();
 
     submit(event.currentTarget);
-  }
+  };
 
   const answer = async () => {
     setTimeout(() => {
@@ -348,7 +353,7 @@ export default function Game() {
             const promise: Promise<void> = new Promise((resolve) => {
               setTimeout(() => {
                 if (!hintData) return;
-                console.log(`effect in:`)
+                console.log(`effect in:`);
                 console.log(hintData);
 
                 setLetterRowStates((prevState) => {
@@ -356,7 +361,8 @@ export default function Game() {
                   // @ts-ignore
                   console.log(hintData.matchings[i]);
                   // @ts-ignore
-                  copyForUpdate[answeredCount].letterStates[i].state = hintData.matchings[i];
+                  copyForUpdate[answeredCount].letterStates[i].state =
+                    hintData.matchings[i];
                   return copyForUpdate;
                 });
 
@@ -370,10 +376,10 @@ export default function Game() {
             letterRowStates[answeredCount].letterStates.forEach(
               (letterState, i) => {
                 // @ts-ignore
-                if (hintData.matchings[i] === 'correct') {
+                if (hintData.matchings[i] === "correct") {
                   addCorrectLetters(letterState.letter);
                   // @ts-ignore
-                } else if (hintData.matchings[i] === 'present') {
+                } else if (hintData.matchings[i] === "present") {
                   addPresentLetters(letterState.letter);
                 } else {
                   addAbsentLetters(letterState.letter);
@@ -411,6 +417,10 @@ export default function Game() {
     }, 2000);
   }, [message]);
 
+  // mocking flug
+  const isGetNft = false;
+  const isLoading = false;
+
   return (
     <>
       <Layout>
@@ -425,12 +435,29 @@ export default function Game() {
             deleteLetter={deleteLetter}
             answer={answer}
           />
-          {
-            isAnswered && (
-              <button onClick={handleCommit} type="button">commit</button>
-            )
-          }
-          <div style={{ display: 'none' }}>
+          {isAnswered && (
+            <div className="modal">
+              <div className="modal-content">
+                <h1 className="text-congratulate">Congratulation 🎉</h1>
+                {!isGetNft && (
+                  <button
+                    className="btn-congratulate"
+                    onClick={handleCommit}
+                    type="button"
+                  >
+                    GET NFT
+                  </button>
+                )}
+                {isLoading && <div className="loader"></div>}
+                {isGetNft && (
+                  <div className="svg-image-nft">
+                    <img src={mockNFT} alt="nft" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <div style={{ display: "none" }}>
             <input name="word" type="text" ref={wordRef} />
           </div>
         </Form>
