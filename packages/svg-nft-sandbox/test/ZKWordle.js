@@ -85,7 +85,7 @@ describe("ZKWordle", function () {
   });
 
   describe("answer", function() {
-    it.only("should success", async function() {
+    it("should success", async function() {
       let { initialize } = await import("zokrates-js");
 
       const zokrates = await initialize();
