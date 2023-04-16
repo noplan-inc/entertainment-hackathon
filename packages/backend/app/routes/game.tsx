@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Board from "~/components/Board";
 import Keyboard from "~/components/KeyBoard";
 import Layout from "~/components/Layout";
@@ -205,6 +205,47 @@ export default function Game() {
 
   const [isRead, setReadStatus] = useState<boolean>(false);
 
+  const isAnswered = useMemo(() => {
+    return correctLetters.length === 5;
+  }, [correctLetters]);
+
+
+  const handleCommit = async () => {
+    if (!isAnswered) return;
+    const answerRaw = correctLetters.join('').toLowerCase();
+
+
+    setClearStatus(true);
+    setMessage("Is correct!");
+    let { initialize } = await import("zokrates-js");
+
+    const zokrates = await initialize();
+    const artifacts = zokrates.compile(zkSource);
+    console.log(artifacts);
+    // const answerRaw = correctLetters.join('').toLowerCase();
+    console.log(answerRaw);
+    const answerDec = getWordDec(answerRaw);
+    const hashedAnswer = getWordHex(answerRaw);
+    const address = await signer?.getAddress();
+    if (!address) {
+      alert('Please connect to metamask')
+      return;
+    }
+    const uintAddress = addressToUintArray(address);
+
+    // 引数全部をconsole.log
+    const { witness } = zokrates.computeWitness(artifacts, [answerDec, hashedAnswer, uintAddress, uintAddress]);
+
+    const pk = await fetchProvingKey();
+
+    const { proof } = zokrates.generateProof(artifacts.program, witness, pk);
+    // @ts-ignore
+    const { a, b, c } = proof;
+
+    // TODO colors
+    await writeAnswer([a, b, c], answerRaw);
+  }
+
 
   const addLetter = (letter: string) => {
     if (letterCount < 5 && answeredCount < 6) {
@@ -239,40 +280,6 @@ export default function Game() {
       setCorrectLetters((prevLetters) => {
         return [...prevLetters, letter];
       });
-    }
-
-    const answerRaw = (correctLetters.join('') + letter).toLowerCase();
-
-    if (correctLetters.length === 4) {
-      setClearStatus(true);
-      setMessage("Is correct!");
-      let { initialize } = await import("zokrates-js");
-
-      const zokrates = await initialize();
-      const artifacts = zokrates.compile(zkSource);
-      console.log(artifacts);
-      // const answerRaw = correctLetters.join('').toLowerCase();
-      console.log(answerRaw);
-      const answerDec = getWordDec(answerRaw);
-      const hashedAnswer = getWordHex(answerRaw);
-      const address = await signer?.getAddress();
-      if (!address) {
-        alert('Please connect to metamask')
-        return;
-      }
-      const uintAddress = addressToUintArray(address);
-
-      // 引数全部をconsole.log
-      const { witness } = zokrates.computeWitness(artifacts, [answerDec, hashedAnswer, uintAddress, uintAddress]);
-
-      const pk = await fetchProvingKey();
-
-      const { proof } = zokrates.generateProof(artifacts.program, witness, pk);
-      // @ts-ignore
-      const { a, b, c } = proof;
-
-      // TODO colors
-      await writeAnswer([a, b, c], answerRaw);
     }
   };
 
@@ -418,6 +425,11 @@ export default function Game() {
             deleteLetter={deleteLetter}
             answer={answer}
           />
+          {
+            isAnswered && (
+              <button onClick={handleCommit} type="button">commit</button>
+            )
+          }
           <div style={{ display: 'none' }}>
             <input name="word" type="text" ref={wordRef} />
           </div>
