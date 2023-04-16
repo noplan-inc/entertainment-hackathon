@@ -160,8 +160,6 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
 
-let initAnswer = false;
-
 export default function Game() {
   const { writeAnswer, signer } = useWriteAnswer();
   const submit = useSubmit();
@@ -245,8 +243,7 @@ export default function Game() {
 
     const answerRaw = (correctLetters.join('') + letter).toLowerCase();
 
-    if (correctLetters.length === 4 && !initAnswer) {
-      initAnswer = true;
+    if (correctLetters.length === 4) {
       setClearStatus(true);
       setMessage("Is correct!");
       let { initialize } = await import("zokrates-js");
