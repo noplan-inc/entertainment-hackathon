@@ -13,6 +13,7 @@ import { useWriteAnswer } from "~/hooks/useWriteAnswer";
 import { useSubmit } from "@remix-run/react";
 import { decode } from "@msgpack/msgpack";
 import mockNFT from "../../public/image/mock.svg";
+import { useReadSVG } from "~/hooks/useReadSVG";
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
@@ -163,10 +164,14 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 
 export default function Game() {
   const { writeAnswer, signer } = useWriteAnswer();
+  const { readSvg } = useReadSVG();
   const submit = useSubmit();
   const hintData = useActionData<typeof action>();
   const formRef = useRef<HTMLFormElement>(null);
   const wordRef = useRef<HTMLInputElement>(null);
+  const [svg, setSvg] = useState<string>("");
+  const [isGetNft, setIsGetNft] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   type LetterRowState = {
     state: string;
@@ -212,6 +217,7 @@ export default function Game() {
 
   const handleCommit = async () => {
     if (!isAnswered) return;
+    setIsLoading(true);
     const answerRaw = correctLetters.join("").toLowerCase();
 
     setClearStatus(true);
@@ -247,7 +253,15 @@ export default function Game() {
     const { a, b, c } = proof;
 
     // TODO colors
-    await writeAnswer([a, b, c], answerRaw);
+    const tokenId = await writeAnswer([a, b, c], answerRaw);
+    console.log("tokenId: ", tokenId);
+    if (tokenId) {
+      const svg = await readSvg(tokenId);
+      if (!svg) return;
+      setSvg(svg);
+      setIsGetNft(true);
+      setIsLoading(false);
+    }
   };
 
   const addLetter = (letter: string) => {
@@ -417,10 +431,6 @@ export default function Game() {
     }, 2000);
   }, [message]);
 
-  // mocking flug
-  const isGetNft = false;
-  const isLoading = false;
-
   return (
     <>
       <Layout>
@@ -451,7 +461,7 @@ export default function Game() {
                 {isLoading && <div className="loader"></div>}
                 {isGetNft && (
                   <div className="svg-image-nft">
-                    <img src={mockNFT} alt="nft" />
+                    <img src={svg} alt="nft" />
                   </div>
                 )}
               </div>
