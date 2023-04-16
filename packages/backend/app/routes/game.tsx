@@ -215,6 +215,20 @@ export default function Game() {
     return correctLetters.length === 5;
   }, [correctLetters]);
 
+  const getColors = () => {
+    return letterRowStates.map(row => {
+      return row.letterStates.map(s => {
+        if (s.state === "correct") {
+          return 3;
+        } else if (s.state === "present") {
+          return 2;
+        } else {
+          return 1;
+        }
+      })
+    }).flat();
+  }
+
   const handleCommit = async () => {
     if (!isAnswered) return;
     setIsLoading(true);
@@ -252,8 +266,11 @@ export default function Game() {
     // @ts-ignore
     const { a, b, c } = proof;
 
+    const colors = getColors();
+    console.log(colors);
+
     // TODO colors
-    const tokenId = await writeAnswer([a, b, c], answerRaw);
+    const tokenId = await writeAnswer([a, b, c], answerRaw, colors);
     console.log("tokenId: ", tokenId);
     if (tokenId) {
       const svg = await readSvg(tokenId);
