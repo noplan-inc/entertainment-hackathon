@@ -9,7 +9,7 @@ export const useWriteAnswer = () => {
     const { data: signer, isError, isLoading } = useSigner();
 
     const contract = useContract({
-        address: '0x22f5887ae1bc1E941090CCf00356F897856102dE',
+        address: '0x571590541A10a1Aec895F16E5f6601B4Eec7eb35',
         abi: zkWordleAbi,
         signerOrProvider: signer,
     })
