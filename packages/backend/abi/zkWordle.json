@@ -1,8 +1,33 @@
 [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "zkWordleNFTAddress",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "GetWordle",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -101,6 +126,16 @@
         "internalType": "struct AnswerVerifier.Proof",
         "name": "proof",
         "type": "tuple"
+      },
+      {
+        "internalType": "string",
+        "name": "word",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256[30]",
+        "name": "colors",
+        "type": "uint256[30]"
       }
     ],
     "name": "answer",

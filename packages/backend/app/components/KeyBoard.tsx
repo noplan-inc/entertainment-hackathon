@@ -24,10 +24,11 @@ type LetterProps = {
 };
 
 const EnterKey = (props: EnterProps) => {
+  // onClick={() => props.answer()} 
   return (
-    <div className="one-and-a-half key" onClick={() => props.answer()}>
+    <button className="one-and-a-half key" onClick={() => props.answer()} type="submit">
       enter
-    </div>
+    </button>
   );
 };
 

@@ -12,8 +12,13 @@
 
 async function main () {
   const ZKWordle = await ethers.getContractFactory("ZKWordle");
-  const zkWordle = await ZKWordle.deploy();
+  const nft = "0xC224bb146B3c5C2498C67794ae0e746C27Ef862c";
+  const zkWordle = await ZKWordle.deploy(nft);
   await zkWordle.deployed();
+
+  const nonceTx = await zkWordle.setNonce();
+  await nonceTx.wait();
+
   console.log("zkWordle deployed to:", zkWordle.address);
 }
 

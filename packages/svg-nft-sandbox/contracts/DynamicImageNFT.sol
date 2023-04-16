@@ -15,23 +15,29 @@ library DynamicImageSVG {
         string textColor;
         uint256 fontSize;
         string text;
+        uint256 blockNumber;
+        uint256 nonce;
+    }
+
+    function generateTextTag(string memory value, uint256 yPos, string memory fontSize, string memory textColor) internal pure returns (string memory) {
+        return string(abi.encodePacked(
+            '<text x="50%" y="', yPos.toString(),
+            '%" dominant-baseline="middle" text-anchor="middle" font-size="',
+            fontSize, '" fill="', textColor, '">', value, '</text>\n'
+        ));
     }
 
     function generateSVG(SVGParams memory params) internal pure returns (string memory) {
+        string memory fontSize = params.fontSize.toString();
+
         bytes memory svg = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ',
-            params.width.toString(),
-            ' ',
-            params.height.toString(),
-            '">\n<rect x="0" y="0" width="100%" height="100%" fill="',
-            params.backgroundColor,
-            '"/>\n<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="',
-            params.fontSize.toString(),
-            '" fill="',
-            params.textColor,
-            '">',
-            params.text,
-            '</text>\n</svg>'
+            params.width.toString(), ' ', params.height.toString(), '">\n',
+            '<rect x="0" y="0" width="100%" height="100%" fill="', params.backgroundColor, '"/>\n',
+            generateTextTag(params.text, 50, fontSize, params.textColor),
+            generateTextTag(string(abi.encodePacked("blockNumber: ", params.blockNumber.toString())), 70, fontSize, params.textColor),
+            generateTextTag(string(abi.encodePacked("nonce: ",params.nonce.toString())), 90, fontSize, params.textColor),
+            '</svg>'
         );
 
         return string(svg);
@@ -53,10 +59,11 @@ contract DynamicImageNFT is ERC721 {
         string memory backgroundColor,
         string memory text,
         string memory textColor,
-        uint256 fontSize
+        uint256 fontSize,
+        uint256 nonce
     ) public {
         _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, generateImage(width, height, backgroundColor, text, textColor, fontSize));
+        _setTokenURI(tokenId, generateImage(width, height, backgroundColor, text, textColor, fontSize, block.number, nonce));
     }
 
     function _baseURI() internal pure override returns (string memory) {
@@ -79,7 +86,9 @@ contract DynamicImageNFT is ERC721 {
         string memory backgroundColor,
         string memory text,
         string memory textColor,
-        uint256 fontSize
+        uint256 fontSize,
+        uint256 blockNumber,
+        uint256 nonce
     ) public pure returns (string memory) {
         DynamicImageSVG.SVGParams memory params = DynamicImageSVG.SVGParams(
             width,
@@ -87,7 +96,9 @@ contract DynamicImageNFT is ERC721 {
             backgroundColor,
             textColor,
             fontSize,
-            text
+            text,
+            blockNumber,
+            nonce
         );
 
         return params.generateSVG();
