@@ -32,17 +32,23 @@ yarn dev
 
 `http://127.0.0.1:8788/game` へアクセス。
 
-## 作問のための設定
+## デプロイ、ミンター設定
 
 ```bash
-// ミンターをセット
-yarn hardhat run --network goerli scripts/setMinter.js
+// NFTのデプロイ
+yarn hardhat run --network goerli scripts/deployZkWordleNFT.js
 
 // ゲームコントラクトのデプロイ
 yarn hardhat run --network goerli scripts/deployZkWordle.js
 
-// NFTのデプロイ
-yarn hardhat run --network goerli scripts/deployZkWordleNFT.js
+// ミンターをセット
+yarn hardhat run --network goerli scripts/setMinter.js
+```
+
+## 作問のための設定
+```bash
+// 作問
+yarn hardhat run --network goerli scripts/createQuestion.js
 ```
 
 ## About
