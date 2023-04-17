@@ -14,6 +14,7 @@ import { useSubmit } from "@remix-run/react";
 import { decode } from "@msgpack/msgpack";
 import mockNFT from "../../public/image/mock.svg";
 import { useReadSVG } from "~/hooks/useReadSVG";
+import { useGetRound } from "~/hooks/useGetRound";
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------
@@ -164,6 +165,7 @@ export async function action({ request, context: { auth } }: ActionArgs) {
 
 export default function Game() {
   const { writeAnswer, signer } = useWriteAnswer();
+  const { getRound } = useGetRound();
   const { readSvg } = useReadSVG();
   const submit = useSubmit();
   const hintData = useActionData<typeof action>();
@@ -208,6 +210,7 @@ export default function Game() {
   const [presentLetters, setPresentLetters] = useState<string[]>([]);
   const [absentLetters, setAbsentLetters] = useState<string[]>([]);
   const [message, setMessage] = useState<string>("");
+  const [round, setRound] = useState<number>(0);
 
   const [isRead, setReadStatus] = useState<boolean>(false);
 
@@ -270,7 +273,12 @@ export default function Game() {
     console.log(colors);
 
     // TODO colors
-    const tokenId = await writeAnswer([a, b, c], answerRaw, colors);
+    let tokenId
+    try {
+      tokenId = await writeAnswer([a, b, c], answerRaw, colors); 
+    } catch (error) {
+      alert("This question may have already answered.\nPlease retry")
+    }
     console.log("tokenId: ", tokenId);
     if (tokenId) {
       const svg = await readSvg(tokenId);
@@ -355,6 +363,10 @@ export default function Game() {
     if (answeredCount !== 6 && !isClear) {
       if (!isChecking) {
         if (letterCount === 5) {
+          (async () => {
+            if (round !== Number(await getRound())) alert("this question has already answered.")
+          })();
+
           setCheckingState(true);
 
           /* HINT ZKP
@@ -447,6 +459,12 @@ export default function Game() {
       setMessage("");
     }, 2000);
   }, [message]);
+
+  useEffect(() => {
+    (async () => {
+      setRound(Number(await getRound()));
+    })();
+  }, [getRound]);
 
   return (
     <>
