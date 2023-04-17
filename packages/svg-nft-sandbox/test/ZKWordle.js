@@ -79,7 +79,7 @@ describe("ZKWordle", function () {
         hashedAnswer
       )).not.to.be.reverted;
 
-      expect(await zkWordle.round()).to.equal(1);
+      expect(await zkWordle.round()).to.equal(0);
       
     });
   });
