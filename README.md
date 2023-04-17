@@ -30,7 +30,7 @@ yarn install --frozen-lockfile
 yarn dev
 ```
 
-`http://127.0.0.1:8788` へアクセス。
+`http://127.0.0.1:8788/game` へアクセス。
 
 ## 作問のための設定
 
