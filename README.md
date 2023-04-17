@@ -45,7 +45,7 @@ yarn hardhat run --network goerli scripts/deployZkWordle.js
 yarn hardhat run --network goerli scripts/setMinter.js
 ```
 
-## 作問のための設定
+## 作問のための設定（誰かが問題を正解するとこのスクリプトを実行しないと次の問題に移行しない）
 ```bash
 // 作問
 yarn hardhat run --network goerli scripts/createQuestion.js
